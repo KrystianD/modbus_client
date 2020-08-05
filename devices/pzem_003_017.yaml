@@ -1,0 +1,42 @@
+zero_mode: True
+registers:
+  input_registers:
+    - name: voltage
+      type: uint16
+      unit: V
+      scale: 0.01
+      address: 0
+
+    - name: current
+      type: uint16
+      unit: A
+      scale: 0.01
+      address: 1
+
+    - name: power
+      type: uint32le
+      unit: W
+      scale: 0.1
+      address: 2
+
+    - name: energy
+      type: uint32le
+      unit: Wh
+      scale: 1
+      address: 4
+
+    # - name: high_voltage_alarm
+      # type: uint16
+      # address: 6
+
+    # - name: low_voltage_alarm
+      # type: uint16
+      # address: 7
+  holding_registers:
+    - name: slave_id
+      type: uint16
+      address: 2
+
+    - name: current_range
+      type: uint16
+      address: 3

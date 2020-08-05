@@ -1,0 +1,133 @@
+zero_mode: True
+
+registers:
+  input_registers:
+    - name: charging_mode
+      address: 1
+    
+    - name: pv_voltage
+      address: 2
+      scale: 0.1
+      unit: V
+    
+    - name: bat_voltage
+      address: 3
+      scale: 0.1
+      unit: V
+    
+    - name: bat_current
+      address: 4
+      scale: 0.1
+      unit: A
+    
+    - name: out_voltage
+      address: 5
+      scale: 0.1
+      unit: V
+    
+    - name: load_voltage
+      address: 6
+      scale: 0.1
+      unit: V
+    
+    - name: load_current
+      address: 7
+      scale: 0.1
+      unit: A
+    
+    - name: bat_power
+      address: 8
+      unit: W
+    
+    - name: load_power
+      address: 9
+      unit: W
+    
+    - name: bat_temp
+      address: 10
+      unit: "°C"
+    
+    - name: inner_temp
+      address: 11
+      unit: "°C"
+    
+    - name: bat_capacity
+      address: 12
+      unit: "%"
+    
+    - name: bat_charge
+      address: 13
+      type: uint32le
+      unit: Wh
+    
+    - name: load_consumption
+      address: 15
+      type: uint32le
+      unit: Wh
+  
+  holding_registers:
+    - name: bulk_voltage
+      address: 1
+      scale: 0.1
+      unit: V
+    
+    - name: float_voltage
+      address: 2
+      scale: 0.1
+      unit: V
+    
+    - name: max_charging_current
+      address: 3
+      scale: 0.1
+      unit: A
+    
+    - name: max_discharging_current
+      address: 4
+      scale: 0.1
+      unit: A
+    
+    - name: equalize_charge_voltage
+      address: 5
+      scale: 0.1
+      unit: V
+    
+    - name: equalize_charge_time
+      address: 6
+      unit: m
+    
+    - name: load_use_sel
+      address: 7
+  
+    - name: wLoadOvp
+      address: 8
+      scale: 0.1
+      unit: V
+      
+    - name: wLoadUvp
+      address: 9
+      scale: 0.1
+      unit: V
+      
+    - name: wBatOvp
+      address: 10
+      scale: 0.1
+      unit: V
+      
+    - name: wBatOvB
+      address: 11
+      scale: 0.1
+      unit: V
+      
+    - name: wBatUvp
+      address: 12
+      scale: 0.1
+      unit: V
+      
+    - name: wBatUvB
+      address: 13
+      scale: 0.1
+      unit: V
+      
+    - name: wBacklightTime
+      address: 14
+      unit: s

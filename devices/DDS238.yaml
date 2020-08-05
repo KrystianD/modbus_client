@@ -1,0 +1,56 @@
+zero_mode: True
+
+registers:
+  holding_registers:
+    - name: energy
+      unit: Wh
+      scale: 10
+      address: 0x0000
+      type: uint32be
+  
+    - name: export_energy
+      unit: Wh
+      scale: 10
+      address: 0x0008
+      type: uint32be
+      
+    - name: import_energy
+      unit: Wh
+      scale: 10
+      address: 0x000a
+      type: uint32be
+  
+    - name: voltage
+      unit: V
+      scale: 0.1
+      address: 0x000c
+      type: uint16
+
+    - name: current
+      unit: A
+      scale: 0.01
+      address: 0x000d
+      type: uint16
+      
+    - name: active_power
+      unit: W
+      scale: 1
+      address: 0x000e
+      type: uint16
+      
+    - name: reactive_power
+      unit: var
+      scale: 1
+      address: 0x000f
+      type: uint16
+      
+    - name: power_factor
+      scale: 0.001
+      address: 0x0010
+      type: uint16
+  
+    - name: frequency
+      unit: Hz
+      scale: 0.01
+      address: 0x0011
+      type: uint16

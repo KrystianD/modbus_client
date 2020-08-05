@@ -1,0 +1,120 @@
+zero_mode: False
+
+registers:
+  input_registers:
+    - name: voltage
+      unit: V
+      scale: 0.01
+      address: 1
+    
+    - name: voltage_high
+      unit: V
+      scale: 0.01
+      address: 2
+    
+    - name: voltage_low
+      unit: V
+      scale: 0.01
+      address: 3
+    
+    - name: current
+      unit: A
+      scale: 0.01
+      address: 4
+      type: int16
+    
+    - name: power
+      unit: W
+      address: 5
+      type: int16
+    
+    - name: power_high
+      unit: W
+      address: 6
+      type: int16
+    
+    - name: power_low
+      unit: W
+      address: 7
+      type: int16
+    
+    - name: forward_charge
+      unit: Ah
+      scale: 0.01
+      address: 8
+      type: int32le
+    
+    - name: forward_energy
+      unit: Wh
+      scale: 0.01
+      address: 10
+      type: int32le
+    
+    - name: backward_charge
+      unit: Ah
+      scale: 0.01
+      address: 12
+      type: int32le
+    
+    - name: backward_energy
+      unit: Wh
+      scale: 0.01
+      address: 14
+      type: int32le
+  
+    
+    - name: forward_charge_high
+      unit: Ah
+      scale: 0.01
+      address: 16
+      type: int32le
+    
+    - name: forward_energy_high
+      unit: Wh
+      scale: 0.01
+      address: 18
+      type: int32le
+    
+    - name: backward_charge_high
+      unit: Ah
+      scale: 0.01
+      address: 20
+      type: int32le
+    
+    - name: backward_energy_high
+      unit: Wh
+      scale: 0.01
+      address: 22
+      type: int32le
+  
+    
+    - name: forward_charge_low
+      unit: Ah
+      scale: 0.01
+      address: 24
+      type: int32le
+    
+    - name: forward_energy_low
+      unit: Wh
+      scale: 0.01
+      address: 26
+      type: int32le
+    
+    - name: backward_charge_low
+      unit: Ah
+      scale: 0.01
+      address: 28
+      type: int32le
+    
+    - name: backward_energy_low
+      unit: Wh
+      scale: 0.01
+      address: 30
+      type: int32le
+  
+  holding_registers:
+    - name: configuration
+      address: 1
+    
+    - name: slave_id
+      address: 2

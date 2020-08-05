@@ -1,0 +1,20 @@
+zero_mode: False
+
+registers: []
+
+switches:
+  - name: relay1
+    type: coil
+    number: 1
+
+  - name: relay2
+    type: coil
+    number: 2
+
+  - name: relay3
+    type: coil
+    number: 3
+
+  - name: relay4
+    type: coil
+    number: 4

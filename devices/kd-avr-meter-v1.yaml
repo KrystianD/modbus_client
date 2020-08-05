@@ -1,0 +1,62 @@
+zero_mode: False
+
+registers:
+  input_registers:
+    - name: voltage
+      unit: V
+      scale: 0.01
+      address: 1
+    
+    - name: current
+      unit: A
+      scale: 0.01
+      address: 2
+      type: int16
+    
+    - name: power
+      unit: W
+      address: 3
+      type: int16
+    
+    - name: forward_charge
+      unit: Ah
+      scale: 0.01
+      address: 4
+      type: int32le
+    
+    - name: forward_energy
+      unit: Wh
+      scale: 0.01
+      address: 6
+      type: int32le
+    
+    - name: backward_charge
+      unit: Ah
+      scale: 0.01
+      address: 8
+      type: int32le
+    
+    - name: backward_energy
+      unit: Wh
+      scale: 0.01
+      address: 10
+      type: int32le
+  
+  holding_registers:
+    - name: configuration
+      address: 1
+    
+    - name: slave_id
+      address: 2
+    
+    - name: servo_min
+      address: 3
+    
+    - name: servo_min_duration
+      address: 4
+    
+    - name: servo_max
+      address: 5
+    
+    - name: servo_max_duration
+      address: 6
