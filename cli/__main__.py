@@ -140,6 +140,20 @@ async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, u
             read_num += 1
 
 
+async def handle_list(device_config: DeviceConfig) -> None:
+    print("Input registers:")
+    for holding_register in device_config.registers.input_registers:
+        print("  ", holding_register.name)
+
+    print("Holding registers:")
+    for input_register in device_config.registers.holding_registers:
+        print("  ", input_register.name)
+
+    print("Coils:")
+    for switch in device_config.switches:
+        print("  ", switch.name)
+
+
 async def handle_read(device_config: DeviceConfig, client: AsyncModbusClient, unit: int, name: str) -> None:
     register = device_config.find_register(name)
     if register is not None:
@@ -166,6 +180,42 @@ async def handle_watch(device_config: DeviceConfig, client: AsyncModbusClient, u
         return
 
     print(f"Register or switch [{name}] not found")
+
+
+async def handle_write(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int, name: str, value: float) -> None:
+    register = device_config.find_register(name)
+    if register is None:
+        print("Register not found")
+        exit(1)
+
+    await modbus_device.write_register(client, unit, register, value)
+
+
+async def handle_enable(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int, name: str) -> None:
+    switch = device_config.find_switch(name)
+    if switch is None:
+        print("Switch not found")
+        exit(1)
+
+    await modbus_device.switch_set(client, unit, switch, True)
+
+
+async def handle_disable(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int, name: str) -> None:
+    switch = device_config.find_switch(name)
+    if switch is None:
+        print("Switch not found")
+        exit(1)
+
+    await modbus_device.switch_set(client, unit, switch, False)
+
+
+async def handle_toggle(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int, name: str) -> None:
+    switch = device_config.find_switch(name)
+    if switch is None:
+        print("Switch not found")
+        exit(1)
+
+    await modbus_device.switch_toggle(client, unit, switch)
 
 
 async def main() -> None:
@@ -263,17 +313,7 @@ async def main() -> None:
         exit(1)
 
     if args.cmd == "list":
-        print("Input registers:")
-        for holding_register in device_config.registers.input_registers:
-            print("  ", holding_register.name)
-
-        print("Holding registers:")
-        for input_register in device_config.registers.holding_registers:
-            print("  ", input_register.name)
-
-        print("Coils:")
-        for switch in device_config.switches:
-            print("  ", switch.name)
+        await handle_list(device_config)
 
     if args.cmd == "read":
         await handle_read(device_config, client, unit, args.name)
@@ -295,36 +335,16 @@ async def main() -> None:
                            interval=args.interval)
 
     if args.cmd == "write":
-        register = device_config.find_register(args.name)
-        if register is None:
-            print("Register not found")
-            exit(1)
-
-        await modbus_device.write_register(client, unit, register, float(args.value))
+        await handle_write(device_config, client, modbus_device, unit, args.name, float(args.value))
 
     if args.cmd == "enable":
-        switch = device_config.find_switch(args.name)
-        if switch is None:
-            print("Switch not found")
-            exit(1)
-
-        await modbus_device.switch_set(client, unit, switch, True)
+        await handle_enable(device_config, client, modbus_device, unit, args.name)
 
     if args.cmd == "disable":
-        switch = device_config.find_switch(args.name)
-        if switch is None:
-            print("Switch not found")
-            exit(1)
-
-        await modbus_device.switch_set(client, unit, switch, False)
+        await handle_disable(device_config, client, modbus_device, unit, args.name)
 
     if args.cmd == "toggle":
-        switch = device_config.find_switch(args.name)
-        if switch is None:
-            print("Switch not found")
-            exit(1)
-
-        await modbus_device.switch_toggle(client, unit, switch)
+        await handle_toggle(device_config, client, modbus_device, unit, args.name)
 
 
 if __name__ == "__main__":
