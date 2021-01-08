@@ -329,7 +329,9 @@ async def main() -> None:
                            show_registers_types=True)
 
     if args.cmd == "watch-all":
-        await query_device(device_config, client, unit, device_config.get_all_registers(),
+        await query_device(device_config, client, unit,
+                           registers=device_config.get_all_registers(),
+                           switches=device_config.switches,
                            show_register_names=True,
                            show_registers_types=True,
                            interval=args.interval)
