@@ -1,11 +1,12 @@
 import io
+import re
 
 import yaml
 from dataclasses import field
 from enum import Enum
-from typing import List, Optional, Union, cast
+from typing import List, Optional, Union, cast, Any, Dict
 
-from pydantic import StrictInt, StrictFloat
+from pydantic import StrictInt, StrictFloat, validator
 from pydantic.dataclasses import dataclass
 
 from modbus_client.types import RegisterValueType
@@ -25,14 +26,55 @@ class IDeviceRegister:
     unit: Optional[str] = None
 
 
+def parse_register_def(reg_def: str) -> Optional[Dict[str, Any]]:
+    # name/0x002a/float32be*0.1[unit]
+    m = re.match(r"^([a-zA-Z0-9_]+)/(.+)/([^*\[]+)(?:\*(?P<scale>[0-9.]+))?(?:\[(?P<unit>.+)])?$", reg_def)
+    if m is not None:
+        return dict(
+                name=m.group(1),
+                address=int(m.group(2), 0),
+                type=RegisterValueType(m.group(3)),
+                scale=float(m.group("scale")) if m.group("scale") is not None else 1,
+                unit=m.group("unit"))
+
+    # name/0x002a/float32be
+    m = re.match(r"^([a-zA-Z0-9_]+)/(.+)/(.+)$", reg_def)
+    if m is not None:
+        return dict(
+                name=m.group(1),
+                address=int(m.group(2), 0),
+                type=RegisterValueType(m.group(3)))
+
+    # name/0x002a
+    m = re.match(r"^([a-zA-Z0-9_]+)/(.+)$", reg_def)
+    if m is not None:
+        return dict(
+                name=m.group(1),
+                address=int(m.group(2), 0))
+
+    return None
+
+
 @dataclass
 class DeviceHoldingRegister(IDeviceRegister):
-    pass
+    @staticmethod
+    def parse(value: str) -> 'DeviceHoldingRegister':
+        data = parse_register_def(value)
+        if data is None:
+            raise Exception("invalid definition")
+        else:
+            return DeviceHoldingRegister(**data)  # type: ignore
 
 
 @dataclass
 class DeviceInputRegister(IDeviceRegister):
-    pass
+    @staticmethod
+    def parse(value: str) -> 'DeviceInputRegister':
+        data = parse_register_def(value)
+        if data is None:
+            raise Exception("invalid definition")
+        else:
+            return DeviceInputRegister(**data)  # type: ignore
 
 
 class SwitchRegisterTypeEnum(str, Enum):
@@ -50,6 +92,14 @@ class DeviceSwitch:
 class DeviceRegisters:
     input_registers: List[DeviceInputRegister] = field(default_factory=list)
     holding_registers: List[DeviceHoldingRegister] = field(default_factory=list)
+
+    @validator('input_registers', pre=True, allow_reuse=False)
+    def _input_registers(cls, v: Any) -> List[Any]:
+        return [(DeviceInputRegister.parse(x) if isinstance(x, str) else x) for x in v]
+
+    @validator('holding_registers', pre=True, allow_reuse=False)
+    def _holding_registers(cls, v: Any) -> List[Any]:
+        return [(DeviceHoldingRegister.parse(x) if isinstance(x, str) else x) for x in v]
 
 
 @dataclass
