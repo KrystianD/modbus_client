@@ -1,0 +1,18 @@
+zero_mode: True
+
+registers:
+  holding_registers:
+    - slave_id/256
+    - mode/512
+    - out1_time_base/513
+    - out1_multiplier/514
+    - out2_time_base/515
+    - out2_multiplier/516
+    - out1_cycles/517
+    - out1_state_memory/518
+    - out1_automatic_start/519
+
+switches:
+  - name: out1
+    type: coil
+    number: 0
