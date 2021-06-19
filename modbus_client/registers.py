@@ -10,17 +10,17 @@ BitsArray = List[int]
 
 def get_type_format(reg_type: RegisterValueType) -> Tuple[str, bool, Callable[[Any], Union[int, float]]]:
     if reg_type == RegisterValueType.S16:
-        return "h", False, int
+        return "h", False, round
     elif reg_type == RegisterValueType.U16:
-        return "H", False, int
+        return "H", False, round
     elif reg_type == RegisterValueType.S32BE:
-        return "i", True, int
+        return "i", True, round
     elif reg_type == RegisterValueType.U32BE:
-        return "I", True, int
+        return "I", True, round
     elif reg_type == RegisterValueType.S32LE:
-        return "i", False, int
+        return "i", False, round
     elif reg_type == RegisterValueType.U32LE:
-        return "I", False, int
+        return "I", False, round
     elif reg_type == RegisterValueType.F32BE:
         return "f", True, float
     elif reg_type == RegisterValueType.F32LE:
