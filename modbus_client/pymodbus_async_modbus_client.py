@@ -6,9 +6,10 @@ from typing import List, cast, Any, Callable
 import pymodbus.client.sync
 import pymodbus.client.asynchronous.tcp
 import pymodbus.register_read_message
+import pymodbus.register_write_message
 import pymodbus.bit_read_message
 
-from modbus_client.exceptions import ReadErrorException
+from modbus_client.exceptions import ReadErrorException, WriteErrorException
 from modbus_client.async_modbus_client import AsyncModbusClient
 
 
@@ -73,9 +74,13 @@ class PyAsyncModbusClient(AsyncModbusClient):
 
     async def write_holding_registers(self, unit: int, address: int, values: List[int]) -> None:
         if len(values) == 1:
-            await self._run(self.client.write_register, unit=unit, address=address, value=values[0])
+            result = await self._run(self.client.write_register, unit=unit, address=address, value=values[0])
+            if not isinstance(result, pymodbus.register_write_message.WriteSingleRegisterResponse):
+                raise WriteErrorException
         else:
-            await self._run(self.client.write_registers, unit=unit, address=address, values=values)
+            result = await self._run(self.client.write_registers, unit=unit, address=address, values=values)
+            if not isinstance(result, pymodbus.register_write_message.WriteMultipleRegistersResponse):
+                raise WriteErrorException
 
     def close(self) -> None:
         self.client.close()
