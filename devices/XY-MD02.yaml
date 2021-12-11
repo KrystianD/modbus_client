@@ -1,0 +1,11 @@
+zero_mode: True
+
+registers:
+  input_registers:
+    - temp/0x0001/int16*0.1[°C]
+    - humidity/0x0002/uint16*0.1[%RH]
+  holding_registers:
+    - slave_id/0x0101/uint16
+    - baud_rate/0x0102/uint16
+    - temp_correction/0x0103/int16*0.1[°C]
+    - humidity_correction/0x0104/int16*0.1[%RH]
