@@ -1,0 +1,23 @@
+zero_mode: True
+
+registers:
+  holding_registers:
+    - U_SET/0x0000/uint16*0.01[V]
+    - I_SET/0x0001/uint16*0.01[A]
+    - U_OUT/0x0002/uint16*0.01[V]
+    - I_OUT/0x0003/uint16*0.001[A]
+    - POWER/0x0004/uint16*0.01[W]
+    - U_IN/0x0005/uint16*0.01[V]
+    - LOCK/0x0006/uint16
+    - PROTECT/0x0007/uint16
+    - CC_CV/0x0008/uint16
+    - ONOFF/0x0009/uint16
+    - B_LED/0x000a/uint16
+    - MODEL/0x000b/uint16
+    - VERSION/0x000c/uint16
+
+    - EXTRACT_M/0x0023/uint16
+
+    - S_OVP/0x0052/uint16*0.01[V]
+    - S_OCP/0x0053/uint16*0.001[A]
+    - S_OPP/0x0054/uint16*0.1[W]
