@@ -1,3 +1,4 @@
-pymodbus
-pydantic
-pyyaml
+pymodbus>=3.0.0
+pydantic>=1.10.2
+PyYAML>=6.0
+pyserial>=3.5
