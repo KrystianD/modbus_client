@@ -1,17 +1,18 @@
-import os
-import asyncio
 import argparse
+import asyncio
 import datetime
+import os
 from dataclasses import dataclass
 from typing import Tuple, Any, Optional, List, Sequence, cast, Callable, Union, Dict
 
+from cli.argument_parsers import interval_parser, mode_parser, ModeTupleType
+from cli.system_file import load_system_config
 from modbus_client.async_modbus_client import AsyncModbusClient
 from modbus_client.pymodbus_async_modbus_client import PyAsyncModbusTcpClient, PyAsyncModbusRtuClient
 from modbus_client.registers import IRegister
 from modbus_client.types import ModbusReadSession
-from cli.argument_parsers import interval_parser, mode_parser, ModeTupleType
-from modbus_device.device_config import DeviceHoldingRegister, DeviceSwitch, DeviceConfig, DeviceInputRegister, IDeviceRegister
-from cli.system_file import load_system_config
+from modbus_device.device_config import DeviceHoldingRegister, DeviceSwitch, DeviceConfig, DeviceInputRegister, \
+    IDeviceRegister
 from modbus_device.modbus_device import create_modbus_register, ModbusDevice, create_modbus_coil
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -44,7 +45,8 @@ def create_device_from_args(args: Args) -> DeviceCreationResult:
     if device_mode == "tcp":
         client = PyAsyncModbusTcpClient(host=args.host, port=args.port, timeout=3)
     elif device_mode == "rtu":
-        client = PyAsyncModbusRtuClient(path=args.path, baudrate=args.mode[0], stopbits=args.mode[2], parity=args.mode[1], timeout=3)
+        client = PyAsyncModbusRtuClient(
+            path=args.path, baudrate=args.mode[0], stopbits=args.mode[2], parity=args.mode[1], timeout=3)
     else:
         raise Exception("invalid mode")
 
@@ -83,7 +85,8 @@ async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, u
     max_name_len = max(len(x.name) for x in all_registers)
 
     modbus_registers_map: Dict[str, IRegister] = {}
-    modbus_registers_map.update({register.name: create_modbus_register(device_config, register) for register in registers})
+    modbus_registers_map.update({register.name: create_modbus_register(device_config, register)
+                                 for register in registers})
     modbus_registers_map.update({switch.name: create_modbus_coil(device_config, switch) for switch in switches})
     modbus_registers = list(modbus_registers_map.values())
 
@@ -168,21 +171,25 @@ async def handle_read(device_config: DeviceConfig, client: AsyncModbusClient, un
     print(f"Register or switch [{name}] not found")
 
 
-async def handle_watch(device_config: DeviceConfig, client: AsyncModbusClient, unit: int, name: str, interval: float) -> None:
+async def handle_watch(device_config: DeviceConfig, client: AsyncModbusClient, unit: int, name: str,
+                       interval: float) -> None:
     register = device_config.find_register(name)
     if register is not None:
-        await query_device(device_config, client, unit, registers=[register], show_registers_types=False, interval=interval)
+        await query_device(device_config, client, unit, registers=[register], show_registers_types=False,
+                           interval=interval)
         return
 
     switch = device_config.find_switch(name)
     if switch is not None:
-        await query_device(device_config, client, unit, switches=[switch], show_registers_types=False, interval=interval)
+        await query_device(device_config, client, unit, switches=[switch], show_registers_types=False,
+                           interval=interval)
         return
 
     print(f"Register or switch [{name}] not found")
 
 
-async def handle_write(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int, name: str, value: float) -> None:
+async def handle_write(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int,
+                       name: str, value: float) -> None:
     register = device_config.find_register(name)
     if register is None:
         print("Register not found")
@@ -191,7 +198,8 @@ async def handle_write(device_config: DeviceConfig, client: AsyncModbusClient, m
     await modbus_device.write_register(client, unit, register, value)
 
 
-async def handle_enable(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int, name: str) -> None:
+async def handle_enable(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int,
+                        name: str) -> None:
     switch = device_config.find_switch(name)
     if switch is None:
         print("Switch not found")
@@ -200,7 +208,8 @@ async def handle_enable(device_config: DeviceConfig, client: AsyncModbusClient, 
     await modbus_device.switch_set(client, unit, switch, True)
 
 
-async def handle_disable(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int, name: str) -> None:
+async def handle_disable(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int,
+                         name: str) -> None:
     switch = device_config.find_switch(name)
     if switch is None:
         print("Switch not found")
@@ -209,7 +218,8 @@ async def handle_disable(device_config: DeviceConfig, client: AsyncModbusClient,
     await modbus_device.switch_set(client, unit, switch, False)
 
 
-async def handle_toggle(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int, name: str) -> None:
+async def handle_toggle(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int,
+                        name: str) -> None:
     switch = device_config.find_switch(name)
     if switch is None:
         print("Switch not found")
@@ -223,7 +233,7 @@ async def main() -> None:
 
     argparser.add_argument("--format", type=str, choices=("raw", "pretty", "json"), default="pretty")
 
-    mode_subparser = argparser.add_subparsers(title='standalone device', description='valid subcommands', help='additional help')
+    mode_subparser = argparser.add_subparsers(title='standalone device', description='valid subcommands')
     dev_p = mode_subparser.add_parser("device")
     dev_p.set_defaults(create_device=lambda x: create_device_from_args(x))
     dev_p.add_argument("device-file", type=str)

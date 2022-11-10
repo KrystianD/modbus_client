@@ -1,11 +1,10 @@
 import io
 import re
-
-import yaml
 from dataclasses import field
 from enum import Enum
 from typing import List, Optional, Union, cast, Any, Dict
 
+import yaml
 from pydantic import StrictInt, StrictFloat, validator
 from pydantic.dataclasses import dataclass
 
@@ -31,26 +30,26 @@ def parse_register_def(reg_def: str) -> Optional[Dict[str, Any]]:
     m = re.match(r"^([a-zA-Z0-9_]+)/(.+)/([^*\[]+)(?:\*(?P<scale>[0-9.]+))?(?:\[(?P<unit>.+)])?$", reg_def)
     if m is not None:
         return dict(
-                name=m.group(1),
-                address=int(m.group(2), 0),
-                type=RegisterValueType(m.group(3)),
-                scale=float(m.group("scale")) if m.group("scale") is not None else 1,
-                unit=m.group("unit"))
+            name=m.group(1),
+            address=int(m.group(2), 0),
+            type=RegisterValueType(m.group(3)),
+            scale=float(m.group("scale")) if m.group("scale") is not None else 1,
+            unit=m.group("unit"))
 
     # name/0x002a/float32be
     m = re.match(r"^([a-zA-Z0-9_]+)/(.+)/(.+)$", reg_def)
     if m is not None:
         return dict(
-                name=m.group(1),
-                address=int(m.group(2), 0),
-                type=RegisterValueType(m.group(3)))
+            name=m.group(1),
+            address=int(m.group(2), 0),
+            type=RegisterValueType(m.group(3)))
 
     # name/0x002a
     m = re.match(r"^([a-zA-Z0-9_]+)/(.+)$", reg_def)
     if m is not None:
         return dict(
-                name=m.group(1),
-                address=int(m.group(2), 0))
+            name=m.group(1),
+            address=int(m.group(2), 0))
 
     return None
 

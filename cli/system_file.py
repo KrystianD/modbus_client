@@ -1,7 +1,7 @@
-import yaml
 from dataclasses import field
 from typing import List
 
+import yaml
 from pydantic.dataclasses import dataclass
 
 

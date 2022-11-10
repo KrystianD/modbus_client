@@ -1,6 +1,6 @@
 import struct
 from abc import abstractmethod
-from typing import Union, List, TypeVar, Optional, Tuple, cast, Callable, Type, Any
+from typing import Union, List, TypeVar, Optional, Tuple, cast, Callable, Any
 
 from modbus_client.address_range import AddressRange
 from modbus_client.types import ModbusReadSession, RegisterType, RegisterValueType
@@ -37,7 +37,8 @@ def get_bits(value: int, bits: BitsArray) -> int:
 
 
 class IRegister(AddressRange):
-    def __init__(self, name: str, reg_type: RegisterType, address: int, value_type: RegisterValueType, bits: Optional[BitsArray]) -> None:
+    def __init__(self, name: str, reg_type: RegisterType, address: int,
+                 value_type: RegisterValueType, bits: Optional[BitsArray]) -> None:
         super().__init__(address, struct.calcsize(get_type_format(value_type)[0]) // 2)
         self.name = name
         self.reg_type = reg_type
@@ -141,7 +142,8 @@ TEnumRegisterEnumCls = TypeVar("TEnumRegisterEnumCls")
 
 class Coil(IRegister):
     def __init__(self, name: str, reg_type: RegisterType, number: int) -> None:
-        super().__init__(name=name, reg_type=reg_type, address=number // 8 * 8, value_type=RegisterValueType.U16, bits=None)
+        super().__init__(name=name, reg_type=reg_type, address=number // 8 * 8, value_type=RegisterValueType.U16,
+                         bits=None)
         self.count = 8
         self.number = number
 

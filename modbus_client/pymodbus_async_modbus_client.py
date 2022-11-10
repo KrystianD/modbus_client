@@ -3,13 +3,13 @@ import functools
 from concurrent.futures.thread import ThreadPoolExecutor
 from typing import List, cast, Any, Callable
 
+import pymodbus.bit_read_message
 import pymodbus.client
 import pymodbus.register_read_message
 import pymodbus.register_write_message
-import pymodbus.bit_read_message
 
-from modbus_client.exceptions import ReadErrorException, WriteErrorException
 from modbus_client.async_modbus_client import AsyncModbusClient
+from modbus_client.exceptions import ReadErrorException, WriteErrorException
 
 
 class PyAsyncModbusClient(AsyncModbusClient):
@@ -94,7 +94,9 @@ class PyAsyncModbusTcpClient(PyAsyncModbusClient):
 
 class PyAsyncModbusRtuClient(PyAsyncModbusClient):
     def __init__(self, path: str, baudrate: int = 9600, stopbits: int = 1, parity: str = "N", timeout: int = 3):
-        super().__init__(pymodbus.client.serial.ModbusSerialClient(method="rtu", port=path, baudrate=baudrate, stopbits=stopbits, parity=parity, timeout=timeout))
+        super().__init__(pymodbus.client.serial.ModbusSerialClient(method="rtu", port=path,
+                                                                   baudrate=baudrate, stopbits=stopbits, parity=parity,
+                                                                   timeout=timeout))
 
 
 __all__ = [

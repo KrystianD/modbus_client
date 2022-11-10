@@ -35,7 +35,8 @@ class AsyncModbusClient:
     def close(self) -> None:
         pass
 
-    async def read_registers(self, unit: int, registers: Sequence[IRegister], allow_holes: bool = True) -> ModbusReadSession:
+    async def read_registers(self, unit: int, registers: Sequence[IRegister],
+                             allow_holes: bool = True) -> ModbusReadSession:
         coils_registers = [x for x in registers if x.reg_type == RegisterType.Coil]
         discrete_inputs_registers = [x for x in registers if x.reg_type == RegisterType.DiscreteInputs]
         input_registers = [x for x in registers if x.reg_type == RegisterType.InputRegister]
@@ -60,7 +61,8 @@ class AsyncModbusClient:
                 ses.registers_dict[(RegisterType.InputRegister, rng.address + i)] = val3
 
         for rng in holding_registers_buckets:
-            for i, val4 in enumerate(await self.read_holding_registers(unit=unit, address=rng.address, count=rng.count)):
+            for i, val4 in enumerate(
+                    await self.read_holding_registers(unit=unit, address=rng.address, count=rng.count)):
                 ses.registers_dict[(RegisterType.HoldingRegister, rng.address + i)] = val4
 
         return ses

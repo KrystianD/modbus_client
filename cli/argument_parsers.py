@@ -1,5 +1,5 @@
-import re
 import argparse
+import re
 from typing import Tuple, Any
 
 ModeTupleType = Tuple[int, str, int]
