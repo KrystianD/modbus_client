@@ -51,8 +51,8 @@ class PyAsyncModbusClient(AsyncModbusClient):
                     value |= bit << i
                 values.append(value)
             return values
-
-        raise ReadErrorException
+        else:
+            raise ReadErrorException(str(result))
 
     async def read_input_registers(self, unit: int, address: int, count: int) -> List[int]:
         result = await self._run(self.client.read_input_registers, unit=unit, address=address, count=count)
@@ -61,7 +61,8 @@ class PyAsyncModbusClient(AsyncModbusClient):
                 raise ReadErrorException
             # noinspection PyTypeChecker
             return cast(List[int], result.registers)
-        raise ReadErrorException
+        else:
+            raise ReadErrorException(str(result))
 
     async def read_holding_registers(self, unit: int, address: int, count: int) -> List[int]:
         result = await self._run(self.client.read_holding_registers, unit=unit, address=address, count=count)
@@ -70,17 +71,18 @@ class PyAsyncModbusClient(AsyncModbusClient):
                 raise ReadErrorException
             # noinspection PyTypeChecker
             return cast(List[int], result.registers)
-        raise ReadErrorException
+        else:
+            raise ReadErrorException(str(result))
 
     async def write_holding_registers(self, unit: int, address: int, values: List[int]) -> None:
         if len(values) == 1:
             result = await self._run(self.client.write_register, unit=unit, address=address, value=values[0])
             if not isinstance(result, pymodbus.register_write_message.WriteSingleRegisterResponse):
-                raise WriteErrorException
+                raise WriteErrorException(str(result))
         else:
             result = await self._run(self.client.write_registers, unit=unit, address=address, values=values)
             if not isinstance(result, pymodbus.register_write_message.WriteMultipleRegistersResponse):
-                raise WriteErrorException
+                raise WriteErrorException(str(result))
 
     def close(self) -> None:
         self.client.close()
