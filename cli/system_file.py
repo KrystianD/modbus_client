@@ -20,4 +20,4 @@ class SystemConfig:
 
 
 def load_system_config(path: str) -> SystemConfig:
-    return SystemConfig(**yaml.load(open(path, "rt"), Loader=yaml.SafeLoader))  # type: ignore
+    return SystemConfig(**yaml.load(open(path, "rt"), Loader=yaml.SafeLoader))

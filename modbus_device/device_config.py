@@ -63,7 +63,7 @@ class DeviceHoldingRegister(IDeviceRegister):
         if data is None:
             raise Exception("invalid definition")
         else:
-            return DeviceHoldingRegister(**data)  # type: ignore
+            return DeviceHoldingRegister(**data)
 
 
 @dataclass
@@ -74,7 +74,7 @@ class DeviceInputRegister(IDeviceRegister):
         if data is None:
             raise Exception("invalid definition")
         else:
-            return DeviceInputRegister(**data)  # type: ignore
+            return DeviceInputRegister(**data)
 
 
 class SwitchRegisterTypeEnum(str, Enum):
@@ -125,8 +125,8 @@ class DeviceConfig:
 
 
 def load_device_config_from_yaml(config: str) -> DeviceConfig:
-    return DeviceConfig(**yaml.load(io.StringIO(config), Loader=yaml.SafeLoader))  # type: ignore
+    return DeviceConfig(**yaml.load(io.StringIO(config), Loader=yaml.SafeLoader))
 
 
 def load_device_config(path: str) -> DeviceConfig:
-    return DeviceConfig(**yaml.load(open(path, "rt"), Loader=yaml.SafeLoader))  # type: ignore
+    return DeviceConfig(**yaml.load(open(path, "rt"), Loader=yaml.SafeLoader))

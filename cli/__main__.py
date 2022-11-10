@@ -298,7 +298,7 @@ async def main() -> None:
         argparser.print_help()
         exit(1)
 
-    res = args.create_device(args)  # type: ignore
+    res = args.create_device(args)
     if res is None:
         system_p.print_help()
         exit(1)
