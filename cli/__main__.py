@@ -74,11 +74,15 @@ def create_device_from_system_file(args: Args) -> DeviceCreationResult:
 
 
 async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, unit: int,
-                       registers: List[IDeviceRegister] = [],
-                       switches: List[DeviceSwitch] = [],
+                       registers: Optional[List[IDeviceRegister]] = None,
+                       switches: Optional[List[DeviceSwitch]] = None,
                        show_register_names: bool = False,
                        show_registers_types: bool = False,
                        interval: Optional[float] = None) -> None:
+    if registers is None:
+        registers = []
+    if switches is None:
+        switches = []
     holding_registers = [x for x in registers if isinstance(x, DeviceHoldingRegister)]
     input_registers = [x for x in registers if isinstance(x, DeviceInputRegister)]
     all_registers: List[Union[IDeviceRegister, DeviceSwitch]] = [*registers, *switches]
