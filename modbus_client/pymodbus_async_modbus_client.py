@@ -92,7 +92,7 @@ class PyAsyncModbusTcpClient(PyAsyncModbusClient):
 
 
 class PyAsyncModbusRtuClient(PyAsyncModbusClient):
-    def __init__(self, path: str, baudrate: int, stopbits: int, parity: str, timeout: int):
+    def __init__(self, path: str, baudrate: int = 9600, stopbits: int = 1, parity: str = "N", timeout: int = 3):
         super().__init__(pymodbus.client.sync.ModbusSerialClient(method="rtu", port=path, baudrate=baudrate, stopbits=stopbits, parity=parity, timeout=timeout))
 
 
