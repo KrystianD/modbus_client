@@ -69,7 +69,7 @@ class ModbusDevice:
 
         read_session = await client.read_registers(unit=unit, registers=[modbus_register])
 
-        return modbus_register.get_from_read_session(read_session)
+        return modbus_register.get_value_from_read_session(read_session)
 
     async def write_register(self, client: AsyncModbusClient, unit: int, register: Union[str, IDeviceRegister], value: Union[float, int]) -> None:
         if isinstance(register, IDeviceRegister):

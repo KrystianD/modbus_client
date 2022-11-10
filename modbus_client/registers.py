@@ -48,7 +48,7 @@ class IRegister(AddressRange):
     def format(self, read_session: ModbusReadSession) -> str:
         pass
 
-    def get_value_from_read_session(self, read_session: ModbusReadSession) -> int:
+    def get_raw_from_read_session(self, read_session: ModbusReadSession) -> int:
         type_format, reverse, _ = get_type_format(self.value_type)
         count = struct.calcsize(type_format) // 2
 
@@ -75,21 +75,22 @@ class IRegister(AddressRange):
 
 
 class NumericRegister(IRegister):
-    def __init__(self, name: str, reg_type: RegisterType, address: int, value_type: RegisterValueType = RegisterValueType.U16, *, bits: Optional[BitsArray] = None,
+    def __init__(self, name: str, reg_type: RegisterType, address: int,
+                 value_type: RegisterValueType = RegisterValueType.U16, *, bits: Optional[BitsArray] = None,
                  scale: Union[int, float] = 1, unit: Optional[str] = None) -> None:
         super().__init__(name=name, reg_type=reg_type, address=address, value_type=value_type, bits=bits)
         self.scale = scale
         self.unit = unit
 
-    def get_from_read_session(self, read_session: ModbusReadSession) -> Union[int, float]:
-        num = self.get_value_from_read_session(read_session)
+    def get_value_from_read_session(self, read_session: ModbusReadSession) -> Union[int, float]:
+        num = super().get_raw_from_read_session(read_session)
         return num * self.scale
 
     def value_to_modbus_registers(self, value: Union[int, float]) -> List[int]:
         return super().value_to_modbus_registers(value / self.scale)
 
     def format(self, read_session: ModbusReadSession) -> str:
-        value = self.get_from_read_session(read_session)
+        value = self.get_value_from_read_session(read_session)
         unit_str = "" if self.unit is None else (" " + self.unit)
         if isinstance(value, int):
             return f"{value}{unit_str}"
