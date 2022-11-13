@@ -32,8 +32,8 @@ class PyAsyncModbusClient(AsyncModbusClient):
 
             # noinspection PyTypeChecker
             return cast(List[bool], result.bits[:count])
-
-        raise ReadErrorException
+        else:
+            raise ReadErrorException(str(result))
 
     async def read_discrete_inputs(self, unit: int, address: int, count: int) -> List[int]:
         result = await self._run(self.client.read_discrete_inputs, slave=unit, address=address, count=count)
