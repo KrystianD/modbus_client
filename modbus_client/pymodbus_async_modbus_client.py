@@ -1,6 +1,3 @@
-import asyncio
-import functools
-from concurrent.futures.thread import ThreadPoolExecutor
 from typing import List, cast, Any, Callable
 
 import pymodbus.bit_read_message
@@ -14,11 +11,19 @@ from modbus_client.exceptions import ReadErrorException, WriteErrorException
 
 class PyAsyncModbusClient(AsyncModbusClient):
     def __init__(self, client: pymodbus.client.base.ModbusBaseClient):
+        if not client.use_protocol:
+            raise ValueError("client must be a pymodbus asynchronous client object")
+
         self.client = client
-        self.executor = ThreadPoolExecutor(1)
+        self._is_connected = False
 
     async def _run(self, fn: Callable[..., Any], *args: List[Any], **kwargs: Any) -> Any:
-        return await asyncio.get_event_loop().run_in_executor(self.executor, functools.partial(fn, *args, **kwargs))
+        if not self._is_connected:
+            # noinspection PyUnresolvedReferences
+            await self.client.connect()
+            self._is_connected = True
+
+        return await fn(*args, **kwargs)
 
     async def write_coil(self, unit: int, address: int, value: bool) -> None:
         await self._run(self.client.write_coil, slave=unit, address=address, value=value)
@@ -84,19 +89,19 @@ class PyAsyncModbusClient(AsyncModbusClient):
                 raise WriteErrorException(str(result))
 
     def close(self) -> None:
-        self.client.close()
+        self.client.close()  # sync call, no need to await
 
 
 class PyAsyncModbusTcpClient(PyAsyncModbusClient):
     def __init__(self, host: str, port: int, timeout: int):
-        super().__init__(pymodbus.client.tcp.ModbusTcpClient(host=host, port=port, timeout=timeout))
+        super().__init__(pymodbus.client.tcp.AsyncModbusTcpClient(host=host, port=port, timeout=timeout))
 
 
 class PyAsyncModbusRtuClient(PyAsyncModbusClient):
     def __init__(self, path: str, baudrate: int = 9600, stopbits: int = 1, parity: str = "N", timeout: int = 3):
-        super().__init__(pymodbus.client.serial.ModbusSerialClient(method="rtu", port=path,
-                                                                   baudrate=baudrate, stopbits=stopbits, parity=parity,
-                                                                   timeout=timeout))
+        super().__init__(pymodbus.client.serial.AsyncModbusSerialClient(method="rtu", port=path, baudrate=baudrate,
+                                                                        stopbits=stopbits, parity=parity,
+                                                                        timeout=timeout))
 
 
 __all__ = [
