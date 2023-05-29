@@ -43,11 +43,14 @@ class AddressRangesTest(unittest.TestCase):
         self._test_range([(5, 6), (10, 11)], [(10, 11), (5, 6)], allow_holes=False)
 
     def test_overlapping(self) -> None:
-        self._test_range([(0, 10)], [(0, 1), (0, 5), (5, 9), (10, 10)], allow_holes=True)
-        self._test_range([(7, 15)], [(10, 15), (7, 12)], allow_holes=True)
+        self._test_range([(0, 10)], [(0, 1), (0, 5), (5, 9), (10, 10)], allow_holes=True, max_read_size=100)
+        self._test_range([(7, 15)], [(10, 15), (7, 12)], allow_holes=True, max_read_size=100)
 
-    def test_max_read(self) -> None:
+    def test_max_read_holes(self) -> None:
         self._test_range([(0, 1), (15, 16)], [(0, 1), (15, 16)], allow_holes=True, max_read_size=10)
         self._test_range([(0, 9), (15, 16)], [(0, 1), (8, 9), (15, 16)], allow_holes=True, max_read_size=10)
 
         self._test_range([(0, 16)], [(0, 1), (15, 16)], allow_holes=True, max_read_size=100)
+
+    def test_max_read_no_holes(self) -> None:
+        self._test_range([(0, 4), (4, 6)], [(0, 2), (2, 4), (4, 6)], allow_holes=False, max_read_size=5)
