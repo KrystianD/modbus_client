@@ -1,0 +1,61 @@
+zero_mode: True
+
+registers:
+  holding_registers:
+    - l1_voltage/14/float32be[V]
+    - l2_voltage/16/float32be[V]
+    - l3_voltage/18/float32be[V]
+    - frequency/20/float32be[Hz]
+    - l1_current/22/float32be[A]
+    - l2_current/24/float32be[A]
+    - l3_current/26/float32be[A]
+
+    - total_active_power/28/float32be*1000[W]
+    - l1_active_power/30/float32be*1000[W]
+    - l2_active_power/32/float32be*1000[W]
+    - l3_active_power/34/float32be*1000[W]
+
+    - total_reactive_power/36/float32be*1000[var]
+    - l1_reactive_power/38/float32be*1000[var]
+    - l2_reactive_power/40/float32be*1000[var]
+    - l3_reactive_power/42/float32be*1000[var]
+
+    - total_apparent_power/44/float32be*1000[VA]
+    - l1_apparent_power/46/float32be*1000[VA]
+    - l2_apparent_power/48/float32be*1000[VA]
+    - l3_apparent_power/50/float32be*1000[VA]
+
+    - total_power_factor/52/float32be
+    - l1_power_factor/54/float32be
+    - l2_power_factor/56/float32be
+    - l3_power_factor/58/float32be
+
+    - total_active_energy/256/float32be*1000[VAh]
+    - l1_active_energy/258/float32be*1000[VAh]
+    - l2_active_energy/260/float32be*1000[VAh]
+    - l3_active_energy/262/float32be*1000[VAh]
+
+    - total_active_energy_import/264/float32be*1000[VAh]
+    - l1_active_energy_import/266/float32be*1000[VAh]
+    - l2_active_energy_import/268/float32be*1000[VAh]
+    - l3_active_energy_import/270/float32be*1000[VAh]
+
+    - total_active_energy_export/272/float32be*1000[VAh]
+    - l1_active_energy_export/274/float32be*1000[VAh]
+    - l2_active_energy_export/276/float32be*1000[VAh]
+    - l3_active_energy_export/278/float32be*1000[VAh]
+
+    - total_reactive_energy/280/float32be*1000[varh]
+    - l1_reactive_energy/282/float32be*1000[varh]
+    - l2_reactive_energy/284/float32be*1000[varh]
+    - l3_reactive_energy/286/float32be*1000[varh]
+
+    - total_reactive_energy_import/288/float32be*1000[varh]
+    - l1_reactive_energy_import/290/float32be*1000[varh]
+    - l2_reactive_energy_import/292/float32be*1000[varh]
+    - l3_reactive_energy_import/294/float32be*1000[varh]
+
+    - total_reactive_energy_export/296/float32be*1000[varh]
+    - l1_reactive_energy_export/298/float32be*1000[varh]
+    - l2_reactive_energy_export/300/float32be*1000[varh]
+    - l3_reactive_energy_export/302/float32be*1000[varh]
