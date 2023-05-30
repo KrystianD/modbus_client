@@ -36,7 +36,7 @@ class AsyncModbusClient:
         pass
 
     async def read_registers(self, unit: int, registers: Sequence[IRegister],
-                             allow_holes: bool = True) -> ModbusReadSession:
+                             allow_holes: bool = False, max_read_size: int = 100) -> ModbusReadSession:
         coils_registers = [x for x in registers if x.reg_type == RegisterType.Coil]
         discrete_inputs_registers = [x for x in registers if x.reg_type == RegisterType.DiscreteInputs]
         input_registers = [x for x in registers if x.reg_type == RegisterType.InputRegister]
@@ -44,8 +44,10 @@ class AsyncModbusClient:
 
         coils_buckets = merge_address_ranges(coils_registers, allow_holes=False, max_read_size=1)
         discrete_inputs_buckets = merge_address_ranges(discrete_inputs_registers, allow_holes=False, max_read_size=1)
-        input_registers_buckets = merge_address_ranges(input_registers, allow_holes=allow_holes, max_read_size=100)
-        holding_registers_buckets = merge_address_ranges(holding_registers, allow_holes=allow_holes, max_read_size=100)
+        input_registers_buckets = merge_address_ranges(input_registers, allow_holes=allow_holes,
+                                                       max_read_size=max_read_size)
+        holding_registers_buckets = merge_address_ranges(holding_registers, allow_holes=allow_holes,
+                                                         max_read_size=max_read_size)
 
         ses = ModbusReadSession()
         for rng in coils_buckets:
