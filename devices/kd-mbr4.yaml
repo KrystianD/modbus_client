@@ -1,0 +1,26 @@
+zero_mode: True
+
+registers:
+  holding_registers:
+    - slave_id/0
+    - relay1_timed/2/uint16*10
+    - relay2_timed/4/uint16*10
+    - relay3_timed/6/uint16*10
+    - relay4_timed/8/uint16*10
+
+switches:
+  - name: relay1
+    type: coil
+    number: 0
+
+  - name: relay2
+    type: coil
+    number: 1
+
+  - name: relay3
+    type: coil
+    number: 2
+
+  - name: relay4
+    type: coil
+    number: 3
