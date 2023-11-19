@@ -1,0 +1,20 @@
+zero_mode: True
+
+registers:
+  holding_registers:
+    - temp1/0x0000/int16*0.1[°C]
+    - temp2/0x0001/int16*0.1[°C]
+    - temp3/0x0002/int16*0.1[°C]
+    - temp4/0x0003/int16*0.1[°C]
+    - temp5/0x0004/int16*0.1[°C]
+    - temp6/0x0005/int16*0.1[°C]
+    - temp7/0x0006/int16*0.1[°C]
+    - temp8/0x0007/int16*0.1[°C]
+    - temp9/0x0008/int16*0.1[°C]
+    - temp10/0x0009/int16*0.1[°C]
+    - temp11/0x000a/int16*0.1[°C]
+    - temp12/0x000b/int16*0.1[°C]
+    - temp13/0x000c/int16*0.1[°C]
+    - temp14/0x000d/int16*0.1[°C]
+    - temp15/0x000e/int16*0.1[°C]
+    - temp16/0x000f/int16*0.1[°C]
