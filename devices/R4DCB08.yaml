@@ -10,3 +10,12 @@ registers:
     - temp6/0x0005/int16*0.1[°C]
     - temp7/0x0006/int16*0.1[°C]
     - temp8/0x0007/int16*0.1[°C]
+    - temp1_correction/0x0008/int16*0.1[°C]
+    - temp2_correction/0x0009/int16*0.1[°C]
+    - temp3_correction/0x000a/int16*0.1[°C]
+    - temp4_correction/0x000b/int16*0.1[°C]
+    - temp5_correction/0x000c/int16*0.1[°C]
+    - temp6_correction/0x000d/int16*0.1[°C]
+    - temp7_correction/0x000e/int16*0.1[°C]
+    - temp8_correction/0x000f/int16*0.1[°C]
+    - slave_id/0x0fe
