@@ -1,2 +1,2 @@
 #!/bin/bash
-mypy -p modbus_client -p modbus_device -p cli
+mypy -p modbus_client.client -p modbus_client.device -p modbus_client.cli

@@ -1,12 +1,13 @@
 from typing import Union
 
-from modbus_client.async_modbus_client import AsyncModbusClient
-from modbus_client.registers import NumericRegister, Coil
-from modbus_client.types import RegisterType
-from modbus_device.device_config import DeviceConfig, IDeviceRegister, DeviceInputRegister, DeviceHoldingRegister, \
+from modbus_client.client.async_modbus_client import AsyncModbusClient
+from modbus_client.client.registers import NumericRegister, Coil
+from modbus_client.client.types import RegisterType
+from modbus_client.device.device_config import DeviceConfig, IDeviceRegister, DeviceInputRegister, \
+    DeviceHoldingRegister, \
     load_device_config, load_device_config_from_yaml, DeviceSwitch, \
     SwitchRegisterTypeEnum
-from modbus_device.device_config_finder import find_device_file
+from modbus_client.device.device_config_finder import find_device_file
 
 
 def create_modbus_register(device: DeviceConfig, register: IDeviceRegister) -> NumericRegister:

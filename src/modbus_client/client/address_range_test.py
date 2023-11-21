@@ -1,7 +1,7 @@
 import unittest
 from typing import List, Tuple
 
-from modbus_client.address_range import AddressRange, merge_address_ranges
+from modbus_client.client.address_range import AddressRange, merge_address_ranges
 
 
 # tests use (start, end) tuples instead of (start, count)

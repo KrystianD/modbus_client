@@ -16,6 +16,12 @@ Supported data types:
 
 Within the word, it assumes data is stored Least Significant Bit first.
 
+#### Installation
+
+```shell
+pip install git+https://github.com/KrystianD/modbus_client
+```
+
 #### Example
 
 Take an example energy meter device with 2 registers:
@@ -60,8 +66,9 @@ registers:
 
 ```python
 import asyncio
-from modbus_client.pymodbus_async_modbus_client import PyAsyncModbusTcpClient
-from modbus_device.modbus_device import ModbusDevice
+from modbus_client.client.pymodbus_async_modbus_client import PyAsyncModbusTcpClient
+from modbus_client.device.modbus_device import ModbusDevice
+
 
 async def main():
     modbus_client = PyAsyncModbusTcpClient(host="192.168.1.10", port=4444, timeout=3)
@@ -69,8 +76,9 @@ async def main():
     modbus_device = ModbusDevice.create_from_file("config.yaml")
     voltage = await modbus_device.read_register(modbus_client, unit=1, register="voltage")
     energy = await modbus_device.read_register(modbus_client, unit=1, register="energy")
-    print(voltage) # 12.3
-    print(energy) # 65586
+    print(voltage)  # 12.3
+    print(energy)  # 65586
+
 
 asyncio.get_event_loop().run_until_complete(main())
 ```

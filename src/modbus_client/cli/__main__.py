@@ -5,18 +5,18 @@ import os
 from dataclasses import dataclass
 from typing import Tuple, Any, Optional, List, Sequence, cast, Callable, Union, Dict
 
-from cli.argument_parsers import interval_parser, mode_parser, ModeTupleType
-from cli.system_file import load_system_config
-from modbus_client.async_modbus_client import AsyncModbusClient
-from modbus_client.pymodbus_async_modbus_client import PyAsyncModbusTcpClient, PyAsyncModbusRtuClient
-from modbus_client.registers import IRegister
-from modbus_client.types import ModbusReadSession
-from modbus_device.device_config import DeviceHoldingRegister, DeviceSwitch, DeviceConfig, DeviceInputRegister, \
+from modbus_client.cli.argument_parsers import interval_parser, mode_parser, ModeTupleType
+from modbus_client.cli.system_file import load_system_config
+from modbus_client.client.async_modbus_client import AsyncModbusClient
+from modbus_client.client.pymodbus_async_modbus_client import PyAsyncModbusTcpClient, PyAsyncModbusRtuClient
+from modbus_client.client.registers import IRegister
+from modbus_client.client.types import ModbusReadSession
+from modbus_client.device.device_config import DeviceHoldingRegister, DeviceSwitch, DeviceConfig, DeviceInputRegister, \
     IDeviceRegister
-from modbus_device.modbus_device import create_modbus_register, ModbusDevice, create_modbus_coil
+from modbus_client.device.modbus_device import create_modbus_register, ModbusDevice, create_modbus_coil
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
-root_dir = os.path.join(script_dir, "..")
+root_dir = os.path.join(script_dir, "../../..")
 
 DeviceCreationResult = Tuple[ModbusDevice, int, AsyncModbusClient]
 
@@ -363,7 +363,11 @@ async def main() -> None:
         await handle_toggle(device_config, client, modbus_device, unit, args.name)
 
 
-if __name__ == "__main__":
+def main_cli() -> None:
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(main())
+
+
+if __name__ == "__main__":
+    main_cli()

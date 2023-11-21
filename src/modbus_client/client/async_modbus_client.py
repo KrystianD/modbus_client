@@ -1,9 +1,9 @@
 from abc import abstractmethod
 from typing import List, Sequence
 
-from modbus_client.address_range import merge_address_ranges
-from modbus_client.registers import IRegister, RegisterType
-from modbus_client.types import ModbusReadSession
+from modbus_client.client.address_range import merge_address_ranges
+from modbus_client.client.registers import IRegister, RegisterType
+from modbus_client.client.types import ModbusReadSession
 
 
 class AsyncModbusClient:

@@ -2,8 +2,8 @@ import struct
 from abc import abstractmethod
 from typing import Union, List, TypeVar, Optional, Tuple, cast, Callable, Any
 
-from modbus_client.address_range import AddressRange
-from modbus_client.types import ModbusReadSession, RegisterType, RegisterValueType
+from modbus_client.client.address_range import AddressRange
+from modbus_client.client.types import ModbusReadSession, RegisterType, RegisterValueType
 
 BitsArray = List[int]
 

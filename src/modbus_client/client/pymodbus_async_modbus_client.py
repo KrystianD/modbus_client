@@ -8,8 +8,8 @@ import pymodbus.client
 import pymodbus.register_read_message
 import pymodbus.register_write_message
 
-from modbus_client.async_modbus_client import AsyncModbusClient
-from modbus_client.exceptions import ReadErrorException, WriteErrorException
+from modbus_client.client.async_modbus_client import AsyncModbusClient
+from modbus_client.client.exceptions import ReadErrorException, WriteErrorException
 
 
 class PyAsyncModbusClient(AsyncModbusClient):
