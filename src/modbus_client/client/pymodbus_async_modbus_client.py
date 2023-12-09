@@ -88,12 +88,12 @@ class PyAsyncModbusClient(AsyncModbusClient):
 
 
 class PyAsyncModbusTcpClient(PyAsyncModbusClient):
-    def __init__(self, host: str, port: int, timeout: int):
+    def __init__(self, host: str, port: int, timeout: float):
         super().__init__(pymodbus.client.tcp.ModbusTcpClient(host=host, port=port, timeout=timeout))
 
 
 class PyAsyncModbusRtuClient(PyAsyncModbusClient):
-    def __init__(self, path: str, baudrate: int = 9600, stopbits: int = 1, parity: str = "N", timeout: int = 3):
+    def __init__(self, path: str, baudrate: int = 9600, stopbits: int = 1, parity: str = "N", timeout: float = 3):
         super().__init__(pymodbus.client.serial.ModbusSerialClient(method="rtu", port=path,
                                                                    baudrate=baudrate, stopbits=stopbits, parity=parity,
                                                                    timeout=timeout))
