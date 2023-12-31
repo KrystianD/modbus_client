@@ -1,0 +1,9 @@
+zero_mode: True
+
+registers:
+  holding_registers:
+    - temp/0x0000/int16*0.1[°C]
+    - resistance/0x0020/int16*0.1[Ω]
+    
+    - temp_correction/0x0040/int16*0.1[°C]
+    - resistance_correction/0x0060/int16*0.1[Ω]
