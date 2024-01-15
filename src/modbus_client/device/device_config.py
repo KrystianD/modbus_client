@@ -106,6 +106,7 @@ class DeviceConfig:
     zero_mode: bool
     registers: DeviceRegisters
     switches: List[DeviceSwitch] = field(default_factory=list)
+    force_multiple_write: bool = False
 
     def find_register(self, name: str) -> Optional[IDeviceRegister]:
         for reg in self.get_all_registers():

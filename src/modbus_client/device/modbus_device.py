@@ -86,7 +86,10 @@ class ModbusDevice:
 
         modbus_values = modbus_register.value_to_modbus_registers(value)
 
-        await client.write_holding_registers(unit=unit, address=modbus_register.address, values=modbus_values)
+        if self._device_config.force_multiple_write or len(modbus_values) > 1:
+            await client.write_holding_registers(unit=unit, address=modbus_register.address, values=modbus_values)
+        else:
+            await client.write_holding_register(unit=unit, address=modbus_register.address, value=modbus_values[0])
 
     async def read_switch(self, client: AsyncModbusClient, unit: int, switch: Union[str, DeviceSwitch]) -> bool:
         if isinstance(switch, DeviceSwitch):
