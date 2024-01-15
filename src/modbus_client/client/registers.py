@@ -23,6 +23,10 @@ register_type_converters: Dict[RegisterValueType, RegisterTypeConverter] = {
     RegisterValueType.U32BE: RegisterTypeConverter("I", True, round),
     RegisterValueType.S32LE: RegisterTypeConverter("i", False, round),
     RegisterValueType.U32LE: RegisterTypeConverter("I", False, round),
+    RegisterValueType.S64BE: RegisterTypeConverter("q", True, round),
+    RegisterValueType.U64BE: RegisterTypeConverter("Q", True, round),
+    RegisterValueType.S64LE: RegisterTypeConverter("q", False, round),
+    RegisterValueType.U64LE: RegisterTypeConverter("Q", False, round),
     RegisterValueType.F32BE: RegisterTypeConverter("f", True, float),
     RegisterValueType.F32LE: RegisterTypeConverter("f", False, float),
 }

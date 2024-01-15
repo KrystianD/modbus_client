@@ -11,6 +11,10 @@ Supported data types:
 - S32LE (int32le) - 32bit signed integer, low word first
 - U32BE (uint32be) - 32bit unsigned integer, high word first
 - U32LE (uint32le) - 32bit unsigned integer, low word first
+- S64BE (int64be) - 64bit signed integer, high word first
+- S64LE (int64le) - 64bit signed integer, low word first
+- U64BE (uint64be) - 64bit unsigned integer, high word first
+- U64LE (uint64le) - 64bit unsigned integer, low word first
 - F32BE (float32be) - IEEE 754 32bit float, high word first
 - F32LE (float32le) - IEEE 754 32bit float, low word first
 
