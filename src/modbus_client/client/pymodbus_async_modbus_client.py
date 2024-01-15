@@ -73,15 +73,15 @@ class PyAsyncModbusClient(AsyncModbusClient):
         else:
             raise ReadErrorException(str(result))
 
+    async def write_holding_register(self, unit: int, address: int, value: int) -> None:
+        result = await self._run(self.client.write_register, slave=unit, address=address, value=value)
+        if not isinstance(result, pymodbus.register_write_message.WriteSingleRegisterResponse):
+            raise WriteErrorException(str(result))
+
     async def write_holding_registers(self, unit: int, address: int, values: List[int]) -> None:
-        if len(values) == 1:
-            result = await self._run(self.client.write_register, slave=unit, address=address, value=values[0])
-            if not isinstance(result, pymodbus.register_write_message.WriteSingleRegisterResponse):
-                raise WriteErrorException(str(result))
-        else:
-            result = await self._run(self.client.write_registers, slave=unit, address=address, values=values)
-            if not isinstance(result, pymodbus.register_write_message.WriteMultipleRegistersResponse):
-                raise WriteErrorException(str(result))
+        result = await self._run(self.client.write_registers, slave=unit, address=address, values=values)
+        if not isinstance(result, pymodbus.register_write_message.WriteMultipleRegistersResponse):
+            raise WriteErrorException(str(result))
 
     def close(self) -> None:
         self.client.close()

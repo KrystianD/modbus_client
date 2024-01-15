@@ -28,6 +28,10 @@ class AsyncModbusClient:
         pass
 
     @abstractmethod
+    async def write_holding_register(self, unit: int, address: int, value: int) -> None:
+        pass
+
+    @abstractmethod
     async def write_holding_registers(self, unit: int, address: int, values: List[int]) -> None:
         pass
 
