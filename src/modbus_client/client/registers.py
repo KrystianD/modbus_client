@@ -1,6 +1,6 @@
 import struct
 from abc import abstractmethod
-from typing import Union, List, TypeVar, Optional, Tuple, cast, Callable, Any
+from typing import Union, List, Optional, Tuple, cast, Callable, Any
 
 from modbus_client.client.address_range import AddressRange
 from modbus_client.client.types import ModbusReadSession, RegisterType, RegisterValueType
@@ -98,47 +98,6 @@ class NumericRegister(IRegister):
         elif isinstance(value, float):
             return f"{value:.3f}{unit_str}"
 
-
-TEnumRegisterEnumCls = TypeVar("TEnumRegisterEnumCls")
-
-
-# class EnumRegister(IRegister, Generic[TEnumRegisterEnumCls]):
-#     def __init__(self, name: str, reg_type: RegisterType, address: int, enum_cls: Type[TEnumRegisterEnumCls], value_type: RegisterValueType = RegisterValueType.U16,
-#                  bits: Optional[BitsArray] = None) -> None:
-#         super().__init__(name=name, reg_type=reg_type, address=address, value_type=value_type, bits=bits)
-#         self.enum_cls = enum_cls
-#
-#     def get_raw(self, read_session: ModbusReadSession) -> int:
-#         value = self.get_value_from_read_session(read_session)
-#         return value
-#
-#     def get_from_read_session(self, read_session: ModbusReadSession) -> TEnumRegisterEnumCls:
-#         value = self.get_value_from_read_session(read_session)
-#         return self.enum_cls(value)  # type: ignore
-#
-#
-# class BoolRegister(IRegister):
-#     def __init__(self, name: str, reg_type: RegisterType, address: int, bit: int = 0) -> None:
-#         super().__init__(name=name, reg_type=reg_type, address=address, value_type=RegisterValueType.U16, bits=[bit])
-#
-#     # def get_raw(self, read_session: ModbusReadSession) -> int:
-#     #     value = get_int_from_registers_map(registers_data,self.type, self.address, self.count, self.bits)
-#     #     return value
-#
-#     def get_from_read_session(self, read_session: ModbusReadSession) -> bool:
-#         value = self.get_value_from_read_session(read_session)
-#         print("value", value)
-#         return value == 1
-#
-#     def format(self, read_session: ModbusReadSession) -> str:
-#         value = self.get_from_read_session(read_session)
-#         # unit_str = "" if self.unit is None else (" " + self.unit)
-#         # if isinstance(value, int):
-#         #     return f"{value}{unit_str}"
-#         # elif isinstance(value, float):
-#         #     return f"{value:.3f}{unit_str}"
-#
-#         pass
 
 class Coil(IRegister):
     def __init__(self, name: str, reg_type: RegisterType, number: int) -> None:
