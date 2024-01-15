@@ -107,7 +107,23 @@ async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, u
 
     read_num = 0
     while True:
-        read_ses = await client.read_registers(unit=unit, registers=modbus_registers)
+        read_num += 1
+
+        try:
+            read_ses = await client.read_registers(unit=unit, registers=modbus_registers)
+        except Exception as e:
+            if interval is None:
+                raise e
+            else:
+                date_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print()
+                print(f"===============================")
+                print(f"| {f'#{read_num}':>5} - {date_str} |")
+                print(f"===============================")
+                print(f"READ ERROR {str(e)}")
+
+                await asyncio.sleep(interval)
+                continue
 
         if interval is not None:
             date_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -144,7 +160,6 @@ async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, u
             break
         else:
             await asyncio.sleep(interval)
-            read_num += 1
 
 
 async def handle_list(device_config: DeviceConfig) -> None:
