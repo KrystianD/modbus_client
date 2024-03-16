@@ -5,6 +5,8 @@ from modbus_client.client.address_range import merge_address_ranges
 from modbus_client.client.registers import IRegister, RegisterType
 from modbus_client.client.types import ModbusReadSession
 
+DefaultMaxReadSize = 100
+
 
 class AsyncModbusClient:
     @abstractmethod
@@ -40,7 +42,7 @@ class AsyncModbusClient:
         pass
 
     async def read_registers(self, unit: int, registers: Sequence[IRegister],
-                             allow_holes: bool = False, max_read_size: int = 100) -> ModbusReadSession:
+                             allow_holes: bool = False, max_read_size: int = DefaultMaxReadSize) -> ModbusReadSession:
         coils_registers = [x for x in registers if x.reg_type == RegisterType.Coil]
         discrete_inputs_registers = [x for x in registers if x.reg_type == RegisterType.DiscreteInputs]
         input_registers = [x for x in registers if x.reg_type == RegisterType.InputRegister]
@@ -75,5 +77,6 @@ class AsyncModbusClient:
 
 
 __all__ = [
+    "DefaultMaxReadSize",
     "AsyncModbusClient",
 ]
