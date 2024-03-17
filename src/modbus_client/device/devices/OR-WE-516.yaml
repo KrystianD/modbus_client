@@ -1,287 +1,70 @@
 zero_mode: True
+allow_holes: True
+max_read_size: 100
 
 registers:
   holding_registers:
-    - name: serial_number
-      address: 0x0000
-      type: uint32be
+    - serial_number/0x0000/uint32be
+    - modbus_id/0x0002/uint16
+    - modbus_baudrate/0x0003/uint16
+    - software_version/0x0004/uint32be
+    - hardware_version/0x0006/uint32be
+    - so_output_rate/0x0009/uint16
+    - combined_code/0x000b/uint16
+    - lcd_cycle_time/0x000d/uint16
+    - l1_voltage/0x000e/float32be[V]
+    - l2_voltage/0x0010/float32be[V]
+    - l3_voltage/0x0012/float32be[V]
+    - frequency/0x0014/float32be[Hz]
+    - l1_current/0x0016/float32be[A]
+    - l2_current/0x0018/float32be[A]
+    - l3_current/0x001a/float32be[A]
+    - total_active_power/0x001c/float32be*1000[W]
+    - l1_active_power/0x001e/float32be*1000[W]
+    - l2_active_power/0x0020/float32be*1000[W]
+    - l3_active_power/0x0022/float32be*1000[W]
 
-    - name: modbus_id
-      address: 0x0002
-      type: uint16
-      
-    - name: modbus_baudrate
-      address: 0x0003
-      type: uint16
+    - total_reactive_power/0x0024/float32be*1000[var]
+    - l1_reactive_power/0x0026/float32be*1000[var]
+    - l2_reactive_power/0x0028/float32be*1000[var]
+    - l3_reactive_power/0x002a/float32be*1000[var]
 
-    - name: software_version
-      address: 0x0004
-      type: uint32be
+    - total_apparent_power/0x002c/float32be*1000[VA]
+    - l1_apparent_power/0x002e/float32be*1000[VA]
+    - l2_apparent_power/0x0030/float32be*1000[VA]
+    - l3_apparent_power/0x0032/float32be*1000[VA]
 
-    - name: hardware_version
-      address: 0x0006
-      type: uint32be
+    - total_power_factor/0x0034/float32be
+    - l1_power_factor/0x0036/float32be
+    - l2_power_factor/0x0038/float32be
+    - l3_power_factor/0x003a/float32be
 
-    - name: so_output_rate
-      address: 0x0009
-      type: uint16
+    - total_active_energy/0x0100/float32be*1000[Wh]
+    - l1_active_energy/0x0102/float32be*1000[Wh]
+    - l2_active_energy/0x0104/float32be*1000[Wh]
+    - l3_active_energy/0x0106/float32be*1000[Wh]
 
-    - name: combined_code
-      address: 0x000b
-      type: uint16
+    - total_forward_active_energy/0x0108/float32be*1000[Wh]
+    - l1_forward_active_energy/0x010a/float32be*1000[Wh]
+    - l2_forward_active_energy/0x010c/float32be*1000[Wh]
+    - l3_forward_active_energy/0x010e/float32be*1000[Wh]
 
-    - name: lcd_cycle_time
-      address: 0x000d
-      type: uint16
+    - total_reverse_active_energy/0x0110/float32be*1000[Wh]
+    - l1_reverse_active_energy/0x0112/float32be*1000[Wh]
+    - l2_reverse_active_energy/0x0114/float32be*1000[Wh]
+    - l3_reverse_active_energy/0x0116/float32be*1000[Wh]
 
-    - name: l1_voltage
-      unit: V
-      address: 0x000e
-      type: float32be
+    - total_reactive_energy/0x0118/float32be*1000[varh]
+    - l1_reactive_energy/0x011a/float32be*1000[varh]
+    - l2_reactive_energy/0x011c/float32be*1000[varh]
+    - l3_reactive_energy/0x011e/float32be*1000[varh]
 
-    - name: l2_voltage
-      unit: V
-      address: 0x0010
-      type: float32be
+    - forward_reactive_energy/0x0120/float32be*1000[varh]
+    - l1_forward_reactive_energy/0x0122/float32be*1000[varh]
+    - l2_forward_reactive_energy/0x0124/float32be*1000[varh]
+    - l3_forward_reactive_energy/0x0126/float32be*1000[varh]
 
-    - name: l3_voltage
-      unit: V
-      address: 0x0012
-      type: float32be
-
-    - name: frequency
-      unit: Hz
-      address: 0x0014
-      type: float32be
-
-    - name: l1_current
-      unit: A
-      address: 0x0016
-      type: float32be
-
-    - name: l2_current
-      unit: A
-      address: 0x0018
-      type: float32be
-
-    - name: l3_current
-      unit: A
-      address: 0x001a
-      type: float32be
-
-    - name: total_active_power
-      unit: W
-      scale: 1000
-      address: 0x001c
-      type: float32be
-
-    - name: l1_active_power
-      unit: W
-      scale: 1000
-      address: 0x001e
-      type: float32be
-
-    - name: l2_active_power
-      unit: W
-      scale: 1000
-      address: 0x0020
-      type: float32be
-
-    - name: l3_active_power
-      unit: W
-      scale: 1000
-      address: 0x0022
-      type: float32be
-
-
-    - name: total_reactive_power
-      unit: Var
-      scale: 1000
-      address: 0x0024
-      type: float32be
-
-    - name: l1_reactive_power
-      unit: Var
-      scale: 1000
-      address: 0x0026
-      type: float32be
-
-    - name: l2_reactive_power
-      unit: Var
-      scale: 1000
-      address: 0x0028
-      type: float32be
-
-    - name: l3_reactive_power
-      unit: Var
-      scale: 1000
-      address: 0x002a
-      type: float32be
-
-
-    - name: total_apparent_power
-      unit: VA
-      scale: 1000
-      address: 0x002c
-      type: float32be
-
-    - name: l1_apparent_power
-      unit: VA
-      scale: 1000
-      address: 0x002e
-      type: float32be
-
-    - name: l2_apparent_power
-      unit: VA
-      scale: 1000
-      address: 0x0030
-      type: float32be
-
-    - name: l3_apparent_power
-      unit: VA
-      scale: 1000
-      address: 0x0032
-      type: float32be
-
-
-    - name: total_power_factor
-      address: 0x0034
-      type: float32be
-
-    - name: l1_power_factor
-      address: 0x0036
-      type: float32be
-
-    - name: l2_power_factor
-      address: 0x0038
-      type: float32be
-
-    - name: l3_power_factor
-      address: 0x003a
-      type: float32be
-
-
-    - name: total_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x0100
-      type: float32be
-
-    - name: l1_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x0102
-      type: float32be
-
-    - name: l2_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x0104
-      type: float32be
-
-    - name: l3_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x0106
-      type: float32be
-
-
-    - name: total_forward_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x0108
-      type: float32be
-
-    - name: l1_forward_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x010a
-      type: float32be
-
-    - name: l2_forward_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x010c
-      type: float32be
-
-    - name: l3_forward_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x010e
-      type: float32be
-
-
-    - name: total_reverse_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x0110
-      type: float32be
-
-    - name: l1_reverse_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x0112
-      type: float32be
-
-    - name: l2_reverse_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x0114
-      type: float32be
-
-    - name: l3_reverse_active_energy
-      unit: Wh
-      scale: 1000
-      address: 0x0116
-      type: float32be
-
-
-    - name: total_reactive_energy
-      address: 0x0118
-      type: float32be
-
-    - name: l1_reactive_energy
-      address: 0x011a
-      type: float32be
-
-    - name: l2_reactive_energy
-      address: 0x011c
-      type: float32be
-
-    - name: l3_reactive_energy
-      address: 0x011e
-      type: float32be
-
-
-    - name: forward_reactive_energy
-      address: 0x0120
-      type: float32be
-
-    - name: l1_forward_reactive_energy
-      address: 0x0122
-      type: float32be
-
-    - name: l2_forward_reactive_energy
-      address: 0x0124
-      type: float32be
-
-    - name: l3_forward_reactive_energy
-      address: 0x0126
-      type: float32be
-
-
-    - name: reverse_reactive_energy
-      address: 0x0128
-      type: float32be
-
-    - name: l1_reverse_reactive_energy
-      address: 0x012a
-      type: float32be
-
-    - name: l2_reverse_reactive_energy
-      address: 0x012c
-      type: float32be
-
-    - name: l3_reverse_reactive_energy
-      address: 0x012e
-      type: float32be
+    - reverse_reactive_energy/0x0128/float32be*1000[varh]
+    - l1_reverse_reactive_energy/0x012a/float32be*1000[varh]
+    - l2_reverse_reactive_energy/0x012c/float32be*1000[varh]
+    - l3_reverse_reactive_energy/0x012e/float32be*1000[varh]
