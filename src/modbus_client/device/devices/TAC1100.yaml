@@ -1,0 +1,40 @@
+zero_mode: True
+force_multiple_write: True
+allow_holes: True
+max_read_size: 100
+
+registers:
+  holding_registers:
+    - voltage/0x0000/uint32be*0.01[V]
+    - current/0x0006/uint32be*0.001[A]
+    - active_power/0x000c/int32be[W]
+    - reactive_power/0x0012/int32be[var]
+    - apparent_power/0x0018/uint32be[VA]
+    - power_factor/0x001e/int16*0.001
+    - phase_angle/0x0021/int16*0.01[°]
+    - frequency/0x002a/int16*0.01[Hz]
+    - system_load_type/0x0046/int16
+    - active_power_demand/0x0066/int32be[W]
+    - reactive_power_demand/0x0068/int32be[var]
+    - apparent_power_demand/0x006a/uint32be[VA]
+    - current_demand/0x006c/uint32be*0.001[A]
+    - import_active_power_demand/0x0074/uint32be[W]
+    - export_active_power_demand/0x0076/uint32be[W]
+    - maximum_active_power_demand/0x007c/int32be[W]
+    - maximum_reactive_power_demand/0x007e/int32be[var]
+    - maximum_apparent_power_demand/0x0080/uint32be[VA]
+    - maximum_current_demand/0x0082/uint32be*0.001[A]
+    - maximum_import_active_power_demand/0x008a/uint32be[W]
+    - maximum_export_active_power_demand/0x008c/uint32be[W]
+    - total_import_active_energy/0x0400/uint32be*10[Wh]
+    - total_export_active_energy/0x0402/uint32be*10[Wh]
+    - total_active_energy/0x0404/uint32be*10[Wh]
+    - total_import_reactive_energy/0x0408/uint32be*10[varh]
+    - total_export_reactive_energy/0x040a/uint32be*10[varh]
+    - total_reactive_energy/0x040c/uint32be*10[varh]
+
+    - kppa/0x5000/int16
+    - demand_period/0x5002/int16
+    - slide_time/0x5003/int16
+    - baudrate/0x5006/int16
+    - parity/0x5007/int16
