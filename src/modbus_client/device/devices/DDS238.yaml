@@ -39,7 +39,7 @@ registers:
       type: uint16
       
     - name: reactive_power
-      unit: var
+      unit: VAr
       scale: 1
       address: 0x000f
       type: uint16
