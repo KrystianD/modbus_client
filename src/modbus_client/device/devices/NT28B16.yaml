@@ -18,3 +18,37 @@ registers:
     - temp14/0x000d/int16*0.1[°C]
     - temp15/0x000e/int16*0.1[°C]
     - temp16/0x000f/int16*0.1[°C]
+
+    - temp1_correction/0x0040/int16*0.1[°C]
+    - temp2_correction/0x0041/int16*0.1[°C]
+    - temp3_correction/0x0042/int16*0.1[°C]
+    - temp4_correction/0x0043/int16*0.1[°C]
+    - temp5_correction/0x0044/int16*0.1[°C]
+    - temp6_correction/0x0045/int16*0.1[°C]
+    - temp7_correction/0x0046/int16*0.1[°C]
+    - temp8_correction/0x0047/int16*0.1[°C]
+    - temp9_correction/0x0048/int16*0.1[°C]
+    - temp10_correction/0x0049/int16*0.1[°C]
+    - temp11_correction/0x004a/int16*0.1[°C]
+    - temp12_correction/0x004b/int16*0.1[°C]
+    - temp13_correction/0x004c/int16*0.1[°C]
+    - temp14_correction/0x004d/int16*0.1[°C]
+    - temp15_correction/0x004e/int16*0.1[°C]
+    - temp16_correction/0x004f/int16*0.1[°C]
+
+    - temp1_res_correction/0x0060/int16
+    - temp2_res_correction/0x0061/int16
+    - temp3_res_correction/0x0062/int16
+    - temp4_res_correction/0x0063/int16
+    - temp5_res_correction/0x0064/int16
+    - temp6_res_correction/0x0065/int16
+    - temp7_res_correction/0x0066/int16
+    - temp8_res_correction/0x0067/int16
+    - temp9_res_correction/0x0068/int16
+    - temp10_res_correction/0x0069/int16
+    - temp11_res_correction/0x006a/int16
+    - temp12_res_correction/0x006b/int16
+    - temp13_res_correction/0x006c/int16
+    - temp14_res_correction/0x006d/int16
+    - temp15_res_correction/0x006e/int16
+    - temp16_res_correction/0x006f/int16

@@ -38,3 +38,6 @@ registers:
     - slide_time/0x5003/int16
     - baudrate/0x5006/int16
     - parity/0x5007/int16
+    - backlight_time/0x5019/int16
+    
+    - reset_historical_data/0x5600/int16
