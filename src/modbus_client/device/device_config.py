@@ -8,6 +8,7 @@ import yaml
 from pydantic import StrictInt, StrictFloat, validator
 from pydantic.dataclasses import dataclass
 
+from modbus_client.client.async_modbus_client import DefaultMaxReadSize
 from modbus_client.client.types import RegisterValueType
 
 
@@ -107,6 +108,8 @@ class DeviceConfig:
     registers: DeviceRegisters
     switches: List[DeviceSwitch] = field(default_factory=list)
     force_multiple_write: bool = False
+    allow_holes: bool = False
+    max_read_size: int = DefaultMaxReadSize
 
     def find_register(self, name: str) -> Optional[IDeviceRegister]:
         for reg in self.get_all_registers():

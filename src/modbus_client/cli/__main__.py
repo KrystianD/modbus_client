@@ -114,7 +114,8 @@ async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, u
         read_num += 1
 
         try:
-            read_ses = await client.read_registers(unit=unit, registers=modbus_registers)
+            read_ses = await client.read_registers(unit=unit, registers=modbus_registers, allow_holes=device_config.allow_holes,
+                                                   max_read_size=device_config.max_read_size)
         except Exception as e:
             if interval is None:
                 raise e
