@@ -35,7 +35,7 @@ class Args:
     mode: ModeTupleType
     unit: int
     device: str
-    name: str
+    name: Union[str, List[str]]
     value: str
     interval: float
 
@@ -49,7 +49,7 @@ def create_device_from_args(args: Args) -> DeviceCreationResult:
         client = PyAsyncModbusTcpClient(host=args.host, port=args.port, timeout=3)
     elif device_mode == "rtu":
         client = PyAsyncModbusRtuClient(
-            path=args.path, baudrate=args.mode[0], stopbits=args.mode[2], parity=args.mode[1], timeout=3)
+                path=args.path, baudrate=args.mode[0], stopbits=args.mode[2], parity=args.mode[1], timeout=3)
     elif device_mode == "rtu-over-tcp":
         client = PyAsyncModbusRtuOverTcpClient(host=args.host, port=args.port, timeout=3)
     else:
@@ -218,35 +218,40 @@ async def handle_list(device_config: DeviceConfig) -> None:
         print("  ", switch.name)
 
 
-async def handle_read(device_config: DeviceConfig, client: AsyncModbusClient, unit: int, name: str, format: str) -> None:
-    register = device_config.find_register(name)
-    if register is not None:
-        await query_device(device_config, client, unit, registers=[register], show_registers_types=False, format=format)
-        return
+async def handle_read(device_config: DeviceConfig, client: AsyncModbusClient, unit: int, names: List[str], format: str) -> None:
+    registers: List[IDeviceRegister] = []
+    switches: List[DeviceSwitch] = []
+    for name in names:
+        register = device_config.find_register(name)
+        if register is not None:
+            registers.append(register)
+        else:
+            switch = device_config.find_switch(name)
+            if switch is not None:
+                switches.append(switch)
+            else:
+                print(f"Register or switch [{name}] not found")
 
-    switch = device_config.find_switch(name)
-    if switch is not None:
-        await query_device(device_config, client, unit, switches=[switch], show_registers_types=False, format=format)
-        return
-
-    print(f"Register or switch [{name}] not found")
+    await query_device(device_config, client, unit, registers=registers, switches=switches, show_registers_types=False, format=format)
 
 
-async def handle_watch(device_config: DeviceConfig, client: AsyncModbusClient, unit: int, name: str,
-                       interval: float, format: str) -> None:
-    register = device_config.find_register(name)
-    if register is not None:
-        await query_device(device_config, client, unit, registers=[register], show_registers_types=False, format=format,
-                           interval=interval)
-        return
+async def handle_watch(device_config: DeviceConfig, client: AsyncModbusClient, unit: int, names: List[str], format: str,
+                       interval: float) -> None:
+    registers: List[IDeviceRegister] = []
+    switches: List[DeviceSwitch] = []
+    for name in names:
+        register = device_config.find_register(name)
+        if register is not None:
+            registers.append(register)
+        else:
+            switch = device_config.find_switch(name)
+            if switch is not None:
+                switches.append(switch)
+            else:
+                print(f"Register or switch [{name}] not found")
 
-    switch = device_config.find_switch(name)
-    if switch is not None:
-        await query_device(device_config, client, unit, switches=[switch], show_registers_types=False, format=format,
-                           interval=interval)
-        return
-
-    print(f"Register or switch [{name}] not found")
+    await query_device(device_config, client, unit, registers=registers, switches=switches, show_registers_types=False, format=format,
+                       interval=interval)
 
 
 async def handle_write(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int,
@@ -335,11 +340,11 @@ async def main() -> None:
 
         read_parser = subparsers.add_parser('read')
         read_parser.set_defaults(cmd="read")
-        read_parser.add_argument("name")
+        read_parser.add_argument("name", nargs="+")
 
         watch_parser = subparsers.add_parser('watch')
         watch_parser.set_defaults(cmd="watch")
-        watch_parser.add_argument("name")
+        watch_parser.add_argument("name", nargs="+")
         watch_parser.add_argument("--interval", type=interval_parser, default="1s")
 
         write_parser = subparsers.add_parser('write')
@@ -395,10 +400,10 @@ async def main() -> None:
         await handle_list(device_config)
 
     if args.cmd == "read":
-        await handle_read(device_config, client, unit, args.name, args.format)
+        await handle_read(device_config, client, unit, cast(List[str], args.name), args.format)
 
     if args.cmd == "watch":
-        await handle_watch(device_config, client, unit, args.name, args.format, args.interval)
+        await handle_watch(device_config, client, unit, cast(List[str], args.name), args.format, args.interval)
 
     if args.cmd == "read-all":
         await query_device(device_config, client, unit,
@@ -418,16 +423,16 @@ async def main() -> None:
                            format=args.format)
 
     if args.cmd == "write":
-        await handle_write(device_config, client, modbus_device, unit, args.name, float(args.value))
+        await handle_write(device_config, client, modbus_device, unit, cast(str, args.name), float(args.value))
 
     if args.cmd == "enable":
-        await handle_enable(device_config, client, modbus_device, unit, args.name)
+        await handle_enable(device_config, client, modbus_device, unit, cast(str, args.name))
 
     if args.cmd == "disable":
-        await handle_disable(device_config, client, modbus_device, unit, args.name)
+        await handle_disable(device_config, client, modbus_device, unit, cast(str, args.name))
 
     if args.cmd == "toggle":
-        await handle_toggle(device_config, client, modbus_device, unit, args.name)
+        await handle_toggle(device_config, client, modbus_device, unit, cast(str, args.name))
 
 
 def main_cli() -> None:
