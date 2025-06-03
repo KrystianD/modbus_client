@@ -25,6 +25,7 @@ DeviceCreationResult = Tuple[ModbusDevice, int, AsyncModbusClient]
 
 @dataclass
 class Args:
+    format: str
     cmd: str
     create_device: Callable[['Args'], Optional[DeviceCreationResult]]
     device_mode: str
@@ -78,6 +79,7 @@ def create_device_from_system_file(args: Args) -> DeviceCreationResult:
 
 
 async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, unit: int,
+                       format: str,
                        registers: Optional[List[IDeviceRegister]] = None,
                        switches: Optional[List[DeviceSwitch]] = None,
                        show_register_names: bool = False,
@@ -101,13 +103,38 @@ async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, u
     read_ses: ModbusReadSession
 
     def print_registers(registers_to_print: Sequence[Union[IDeviceRegister, DeviceSwitch]]) -> None:
-        for register in registers_to_print:
-            modbus_register = modbus_registers_map[register.name]
+        if format == "pretty":
+            for register in registers_to_print:
+                modbus_register = modbus_registers_map[register.name]
 
+                if show_register_names:
+                    print(f"{register.name:>{max_name_len}s} = ", end="")
+
+                print(f"{modbus_register.format(read_ses)}")
+
+        if format == "json":
             if show_register_names:
-                print(f"{register.name:>{max_name_len}s} = ", end="")
+                data = {}
+            else:
+                data = []
+            for register in registers_to_print:
+                modbus_register = modbus_registers_map[register.name]
+                value = modbus_register.get_value_from_read_session(read_ses)
+                if show_register_names:
+                    data[register.name] = value
+                else:
+                    data.append(value)
+            sys.stdout.write(json.dumps(data) + "\n")
 
-            print(f"{modbus_register.format(read_ses)}")
+        if format == "raw":
+            data = []
+            for register in registers_to_print:
+                modbus_register = modbus_registers_map[register.name]
+                value = modbus_register.get_value_from_read_session(read_ses)
+                data.append(value)
+            sys.stdout.write(",".join([f"{x}" for x in data]) + "\n")
+
+        sys.stdout.flush()
 
     read_num = 0
     while True:
@@ -120,45 +147,55 @@ async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, u
             if interval is None:
                 raise e
             else:
-                date_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                print()
-                print(f"===============================")
-                print(f"| {f'#{read_num}':>5} - {date_str} |")
-                print(f"===============================")
-                print(f"READ ERROR {str(e)}")
+                if format == "pretty":
+                    date_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    if len(registers) > 1:
+                        print()
+                        print(f"===============================")
+                        print(f"| {f'#{read_num}':>5} - {date_str} |")
+                        print(f"===============================")
+                        print(f"READ ERROR {str(e)}")
+                    else:
+                        print(f"[{f'#{read_num}':>5} - {date_str}] READ ERROR: {str(e)}")
 
                 await asyncio.sleep(interval)
                 continue
 
         if interval is not None:
             date_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if len(registers) > 1:
-                print()
-                print(f"===============================")
-                print(f"| {f'#{read_num}':>5} - {date_str} |")
-                print(f"===============================")
-            else:
-                print(f"[{f'#{read_num}':>5} - {date_str}] ", end="")
+            if format == "pretty":
+                if len(registers) > 1:
+                    print()
+                    print(f"===============================")
+                    print(f"| {f'#{read_num}':>5} - {date_str} |")
+                    print(f"===============================")
+                else:
+                    print(f"[{f'#{read_num}':>5} - {date_str}] ", end="")
 
         if len(input_registers) > 0:
-            if show_registers_types:
-                print("Input registers:")
+            if format == "pretty":
+                if show_registers_types:
+                    print("Input registers:")
             print_registers(input_registers)
 
-        if show_registers_types and len(input_registers) > 0:
-            print()
+        if format == "pretty":
+            if show_registers_types and len(input_registers) > 0:
+                print()
 
         if len(holding_registers) > 0:
-            if show_registers_types:
-                print("Holding registers:")
+            if format == "pretty":
+                if show_registers_types:
+                    print("Holding registers:")
             print_registers(holding_registers)
 
-        if show_registers_types and len(holding_registers) > 0:
-            print()
+        if format == "pretty":
+            if show_registers_types and len(holding_registers) > 0:
+                print()
 
         if len(switches) > 0:
-            if show_registers_types:
-                print("Switches:")
+            if format == "pretty":
+                if show_registers_types:
+                    print("Switches:")
             print_registers(switches)
 
         if interval is None:
@@ -181,31 +218,31 @@ async def handle_list(device_config: DeviceConfig) -> None:
         print("  ", switch.name)
 
 
-async def handle_read(device_config: DeviceConfig, client: AsyncModbusClient, unit: int, name: str) -> None:
+async def handle_read(device_config: DeviceConfig, client: AsyncModbusClient, unit: int, name: str, format: str) -> None:
     register = device_config.find_register(name)
     if register is not None:
-        await query_device(device_config, client, unit, registers=[register], show_registers_types=False)
+        await query_device(device_config, client, unit, registers=[register], show_registers_types=False, format=format)
         return
 
     switch = device_config.find_switch(name)
     if switch is not None:
-        await query_device(device_config, client, unit, switches=[switch], show_registers_types=False)
+        await query_device(device_config, client, unit, switches=[switch], show_registers_types=False, format=format)
         return
 
     print(f"Register or switch [{name}] not found")
 
 
 async def handle_watch(device_config: DeviceConfig, client: AsyncModbusClient, unit: int, name: str,
-                       interval: float) -> None:
+                       interval: float, format: str) -> None:
     register = device_config.find_register(name)
     if register is not None:
-        await query_device(device_config, client, unit, registers=[register], show_registers_types=False,
+        await query_device(device_config, client, unit, registers=[register], show_registers_types=False, format=format,
                            interval=interval)
         return
 
     switch = device_config.find_switch(name)
     if switch is not None:
-        await query_device(device_config, client, unit, switches=[switch], show_registers_types=False,
+        await query_device(device_config, client, unit, switches=[switch], show_registers_types=False, format=format,
                            interval=interval)
         return
 
@@ -358,17 +395,18 @@ async def main() -> None:
         await handle_list(device_config)
 
     if args.cmd == "read":
-        await handle_read(device_config, client, unit, args.name)
+        await handle_read(device_config, client, unit, args.name, args.format)
 
     if args.cmd == "watch":
-        await handle_watch(device_config, client, unit, args.name, args.interval)
+        await handle_watch(device_config, client, unit, args.name, args.format, args.interval)
 
     if args.cmd == "read-all":
         await query_device(device_config, client, unit,
                            registers=device_config.get_all_registers(),
                            switches=device_config.switches,
                            show_register_names=True,
-                           show_registers_types=True)
+                           show_registers_types=True,
+                           format=args.format)
 
     if args.cmd == "watch-all":
         await query_device(device_config, client, unit,
@@ -376,7 +414,8 @@ async def main() -> None:
                            switches=device_config.switches,
                            show_register_names=True,
                            show_registers_types=True,
-                           interval=args.interval)
+                           interval=args.interval,
+                           format=args.format)
 
     if args.cmd == "write":
         await handle_write(device_config, client, modbus_device, unit, args.name, float(args.value))
