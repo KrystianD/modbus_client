@@ -1,14 +1,16 @@
 import argparse
 import asyncio
 import datetime
+import json
 import os
+import sys
 from dataclasses import dataclass
 from typing import Tuple, Any, Optional, List, Sequence, cast, Callable, Union, Dict
 
 from modbus_client.cli.argument_parsers import interval_parser, mode_parser, ModeTupleType
 from modbus_client.cli.system_file import load_system_config
 from modbus_client.client.async_modbus_client import AsyncModbusClient
-from modbus_client.client.pymodbus_async_modbus_client import PyAsyncModbusTcpClient, PyAsyncModbusRtuClient
+from modbus_client.client.pymodbus_async_modbus_client import PyAsyncModbusTcpClient, PyAsyncModbusRtuClient, PyAsyncModbusRtuOverTcpClient
 from modbus_client.client.registers import IRegister
 from modbus_client.client.types import ModbusReadSession
 from modbus_client.device.device_config import DeviceHoldingRegister, DeviceSwitch, DeviceConfig, DeviceInputRegister, \
@@ -47,6 +49,8 @@ def create_device_from_args(args: Args) -> DeviceCreationResult:
     elif device_mode == "rtu":
         client = PyAsyncModbusRtuClient(
             path=args.path, baudrate=args.mode[0], stopbits=args.mode[2], parity=args.mode[1], timeout=3)
+    elif device_mode == "rtu-over-tcp":
+        client = PyAsyncModbusRtuOverTcpClient(host=args.host, port=args.port, timeout=3)
     else:
         raise Exception("invalid mode")
 
@@ -273,6 +277,13 @@ async def main() -> None:
     dev_rtu_p.add_argument("--mode", type=mode_parser, default="9600n1", help="default 9600n1")
     dev_rtu_p.add_argument("--unit", type=int, required=True)
 
+    dev_rtu_over_tcp_p = dev_sp.add_parser("rtu-over-tcp")
+    dev_rtu_over_tcp_p.set_defaults(device_mode="rtu-over-tcp")
+    dev_rtu_over_tcp_p.set_defaults(create_device=lambda x: create_device_from_args(x))
+    dev_rtu_over_tcp_p.add_argument("--host", type=str, required=True)
+    dev_rtu_over_tcp_p.add_argument("--port", type=int, required=True)
+    dev_rtu_over_tcp_p.add_argument("--unit", type=int, required=True)
+
     system_p = mode_subparser.add_parser("system")
     system_p.set_defaults(create_device=lambda x: create_device_from_system_file(x))
     system_p.add_argument("system-file", type=str)
@@ -319,6 +330,7 @@ async def main() -> None:
 
     add_commands_parser(dev_tcp_p)
     add_commands_parser(dev_rtu_p)
+    add_commands_parser(dev_rtu_over_tcp_p)
     add_commands_parser(system_p)
 
     args = cast(Args, argparser.parse_args())

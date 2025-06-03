@@ -7,6 +7,7 @@ import pymodbus.bit_read_message
 import pymodbus.client
 import pymodbus.register_read_message
 import pymodbus.register_write_message
+from pymodbus.framer.rtu_framer import ModbusRtuFramer
 
 from modbus_client.client.async_modbus_client import AsyncModbusClient
 from modbus_client.client.exceptions import ReadErrorException, WriteErrorException
@@ -99,7 +100,13 @@ class PyAsyncModbusRtuClient(PyAsyncModbusClient):
                                                                    timeout=timeout))
 
 
+class PyAsyncModbusRtuOverTcpClient(PyAsyncModbusClient):
+    def __init__(self, host: str, port: int, timeout: float):
+        super().__init__(pymodbus.client.tcp.ModbusTcpClient(host=host, port=port, timeout=timeout, framer=ModbusRtuFramer))
+
+
 __all__ = [
     "PyAsyncModbusTcpClient",
     "PyAsyncModbusRtuClient",
+    "PyAsyncModbusRtuOverTcpClient",
 ]
