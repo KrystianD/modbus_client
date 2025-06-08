@@ -61,7 +61,7 @@ class DeviceHoldingRegister(IDeviceRegister):
     def parse(value: str) -> 'DeviceHoldingRegister':
         data = parse_register_def(value)
         if data is None:
-            raise Exception("invalid definition")
+            raise Exception(f"invalid definition: {value}")
         else:
             return DeviceHoldingRegister(**data)
 
