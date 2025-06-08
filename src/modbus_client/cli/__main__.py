@@ -38,6 +38,8 @@ class Args:
     name: Union[str, List[str]]
     value: str
     interval: float
+    timeout: float
+    silent_interval: float
 
 
 def create_device_from_args(args: Args) -> DeviceCreationResult:
@@ -46,12 +48,13 @@ def create_device_from_args(args: Args) -> DeviceCreationResult:
 
     client: AsyncModbusClient
     if device_mode == "tcp":
-        client = PyAsyncModbusTcpClient(host=args.host, port=args.port, timeout=3)
+        client = PyAsyncModbusTcpClient(host=args.host, port=args.port, timeout=args.timeout, silent_interval=args.silent_interval)
     elif device_mode == "rtu":
         client = PyAsyncModbusRtuClient(
-                path=args.path, baudrate=args.mode[0], stopbits=args.mode[2], parity=args.mode[1], timeout=3)
+                path=args.path, baudrate=args.mode[0], stopbits=args.mode[2], parity=args.mode[1], timeout=args.timeout,
+                silent_interval=args.silent_interval)
     elif device_mode == "rtu-over-tcp":
-        client = PyAsyncModbusRtuOverTcpClient(host=args.host, port=args.port, timeout=3)
+        client = PyAsyncModbusRtuOverTcpClient(host=args.host, port=args.port, timeout=args.timeout, silent_interval=args.silent_interval)
     else:
         raise Exception("invalid mode")
 
@@ -298,6 +301,8 @@ async def main() -> None:
     argparser = argparse.ArgumentParser()
 
     argparser.add_argument("--format", type=str, choices=("raw", "pretty", "json"), default="pretty")
+    argparser.add_argument("--timeout", type=int, default=3)
+    argparser.add_argument("--silent-interval", type=float)
 
     mode_subparser = argparser.add_subparsers(title='standalone device', description='valid subcommands')
     dev_p = mode_subparser.add_parser("device")
