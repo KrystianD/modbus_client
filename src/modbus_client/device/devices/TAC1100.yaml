@@ -36,6 +36,7 @@ registers:
     - kppa/0x5000/int16
     - demand_period/0x5002/int16
     - slide_time/0x5003/int16
+    - slave_id/0x5005/int16
     - baudrate/0x5006/int16
     - parity/0x5007/int16
     - backlight_time/0x5019/int16

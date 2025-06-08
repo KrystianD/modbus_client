@@ -103,10 +103,16 @@ registers:
     - l3_reactive_energy_total/0x1d68/int64be[VArh]
     
     - kppa/0x5000/int16
+    - demand_period/0x5002/int16
+    - slide_time/0x5003/int16
+    - slave_id/0x5005/int16
+    - baudrate/0x5006/int16
+    - parity/0x5007/int16
     - current_direction/0x500f/int16
     - pt1/0x5012/int32be
     - pt2/0x5014/int16
     - ct1/0x5015/int16
     - ct2/0x5016/int16
+    - backlight_time/0x5019/int16
     
     - reset_historical_data/0x5600/int16
