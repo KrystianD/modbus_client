@@ -1,7 +1,7 @@
 import asyncio
 import functools
 from concurrent.futures.thread import ThreadPoolExecutor
-from typing import List, cast, Any, Callable
+from typing import List, cast, Any, Callable, Optional
 
 import pymodbus.bit_read_message
 import pymodbus.client
@@ -89,20 +89,35 @@ class PyAsyncModbusClient(AsyncModbusClient):
 
 
 class PyAsyncModbusTcpClient(PyAsyncModbusClient):
-    def __init__(self, host: str, port: int, timeout: float):
-        super().__init__(pymodbus.client.tcp.ModbusTcpClient(host=host, port=port, timeout=timeout))
+    def __init__(self, host: str, port: int, timeout: float, silent_interval: Optional[float] = None):
+        cl = pymodbus.client.tcp.ModbusTcpClient(host=host, port=port, timeout=timeout)
+
+        if silent_interval is not None:
+            cl.silent_interval = silent_interval
+
+        super().__init__(cl)
 
 
 class PyAsyncModbusRtuClient(PyAsyncModbusClient):
-    def __init__(self, path: str, baudrate: int = 9600, stopbits: int = 1, parity: str = "N", timeout: float = 3):
-        super().__init__(pymodbus.client.serial.ModbusSerialClient(method="rtu", port=path,
-                                                                   baudrate=baudrate, stopbits=stopbits, parity=parity,
-                                                                   timeout=timeout))
+    def __init__(self, path: str, baudrate: int = 9600, stopbits: int = 1, parity: str = "N", timeout: float = 3,
+                 silent_interval: Optional[float] = None):
+        cl = pymodbus.client.serial.ModbusSerialClient(method="rtu", port=path,
+                                                       baudrate=baudrate, stopbits=stopbits, parity=parity,
+                                                       timeout=timeout)
+        if silent_interval is not None:
+            cl.silent_interval = silent_interval
+
+        super().__init__(cl)
 
 
 class PyAsyncModbusRtuOverTcpClient(PyAsyncModbusClient):
-    def __init__(self, host: str, port: int, timeout: float):
-        super().__init__(pymodbus.client.tcp.ModbusTcpClient(host=host, port=port, timeout=timeout, framer=ModbusRtuFramer))
+    def __init__(self, host: str, port: int, timeout: float, silent_interval: Optional[float] = None):
+        cl = pymodbus.client.tcp.ModbusTcpClient(host=host, port=port, timeout=timeout, framer=ModbusRtuFramer)  # type: ignore
+
+        if silent_interval is not None:
+            cl.silent_interval = silent_interval
+
+        super().__init__(cl)
 
 
 __all__ = [
