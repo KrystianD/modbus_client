@@ -57,20 +57,23 @@ class AsyncModbusClient:
 
         ses = ModbusReadSession()
         for rng in coils_buckets:
-            for i, val1 in enumerate(await self.read_coils(unit=unit, address=rng.address, count=rng.count)):
+            values = await self.read_coils(unit=unit, address=rng.address, count=rng.count)
+            for i, val1 in enumerate(values):
                 ses.registers_dict[(RegisterType.Coil, rng.address + i)] = val1
 
         for rng in discrete_inputs_buckets:
-            for i, val2 in enumerate(await self.read_discrete_inputs(unit=unit, address=rng.address, count=rng.count)):
+            values = await self.read_discrete_inputs(unit=unit, address=rng.address, count=rng.count)
+            for i, val2 in enumerate(values):
                 ses.registers_dict[(RegisterType.DiscreteInputs, rng.address + i)] = val2
 
         for rng in input_registers_buckets:
-            for i, val3 in enumerate(await self.read_input_registers(unit=unit, address=rng.address, count=rng.count)):
+            values = await self.read_input_registers(unit=unit, address=rng.address, count=rng.count)
+            for i, val3 in enumerate(values):
                 ses.registers_dict[(RegisterType.InputRegister, rng.address + i)] = val3
 
         for rng in holding_registers_buckets:
-            for i, val4 in enumerate(
-                    await self.read_holding_registers(unit=unit, address=rng.address, count=rng.count)):
+            values = await self.read_holding_registers(unit=unit, address=rng.address, count=rng.count)
+            for i, val4 in enumerate(values):
                 ses.registers_dict[(RegisterType.HoldingRegister, rng.address + i)] = val4
 
         return ses
