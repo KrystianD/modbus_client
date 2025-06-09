@@ -235,7 +235,8 @@ async def handle_read(device_config: DeviceConfig, client: AsyncModbusClient, un
             else:
                 print(f"Register or switch [{name}] not found")
 
-    await query_device(device_config, client, unit, registers=registers, switches=switches, show_registers_types=False, format=format)
+    await query_device(device_config, client, unit, registers=registers, switches=switches, show_registers_types=False, format=format,
+                       show_register_names=len(names) > 1)
 
 
 async def handle_watch(device_config: DeviceConfig, client: AsyncModbusClient, unit: int, names: List[str], format: str,
@@ -254,7 +255,7 @@ async def handle_watch(device_config: DeviceConfig, client: AsyncModbusClient, u
                 print(f"Register or switch [{name}] not found")
 
     await query_device(device_config, client, unit, registers=registers, switches=switches, show_registers_types=False, format=format,
-                       interval=interval)
+                       interval=interval, show_register_names=len(names) > 1)
 
 
 async def handle_write(device_config: DeviceConfig, client: AsyncModbusClient, modbus_device: ModbusDevice, unit: int,
