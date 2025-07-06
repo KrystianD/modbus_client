@@ -1,0 +1,203 @@
+zero_mode: True
+max_read_size: 140
+allow_holes: True
+silent_interval: 0.850 # per manual
+
+registers:
+  holding_registers:
+    - name: output_config
+      address: 1
+      type: enum
+      enum:
+        - name: bat_first
+          value: 0
+          display: SBU
+        - name: pv_first
+          value: 1
+        - name: uti_first
+          value: 2
+        - name: pv_uti_first
+          value: 3
+          display: SUB
+      
+    - name: charge_config
+      address: 2
+      type: enum
+      enum:
+        - name: pv_first
+          value: 0
+        - name: pv_and_uti
+          value: 1
+        - name: pv_only
+          value: 2
+          
+    - buzzer_en/22/bool
+
+    - max_charging_current     /34/ uint16[A]
+    - bulk_charge_voltage      /35/ uint16*0.1[V]
+    - float_charge_voltage     /36/ uint16*0.1[V]
+    - battery_low_to_utility   /37/ uint16*0.1[%/V]
+    - ac_switch_to_battery     /95/ uint16*0.1[%/V]
+    - low_bat_cutoff           /82/ uint16*0.1[%/V]
+
+    - max_ac_charge_current    /38/ uint16[A]
+    - max_gen_charge_current   /83/ uint16[A]
+
+  input_registers:
+    - name: status
+      address: 0
+      type: enum
+      enum:
+        - name: standby
+          display: Standby
+          value: 0
+        - name: pv_grid_supporting_loads
+          display: PV&Grid Supporting Loads
+          value: 1
+        - name: battery_discharging
+          display: Battery Discharging
+          value: 2
+        - name: fault
+          display: Fault
+          value: 3
+        - name: flash
+          display: Flash
+          value: 4
+        - name: pv_charging
+          display: PV Charging
+          value: 5
+        - name: grid_charging
+          display: Grid Charging
+          value: 6
+        - name: pv_grid_charging
+          display: PV&Grid Charging
+          value: 7
+        - name: pv_grid_charging_grid_bypass
+          display: PV&Grid Charging + Grid Bypass
+          value: 8
+        - name: pv_charging_grid_bypass
+          display: PV Charging + Grid Bypass
+          value: 9
+        - name: grid_charging_grid_bypass
+          display: Grid Charging + Grid Bypass
+          value: 10
+        - name: grid_bypass
+          display: Grid Bypass
+          value: 11
+        - name: pv_charging_loads_supporting
+          display: PV Charging + Loads Supporting
+          value: 12
+        - name: pv_discharging
+          display: PV Discharging
+          value: 13
+        - name: pv_battery_discharging
+          display: PV&Battery Discharging
+          value: 14
+        - name: gen_charging
+          display: Gen Charging
+          value: 15
+        - name: gen_charging_gen_bypass
+          display: Gen Charging + Gen Bypass
+          value: 16
+        - name: pv_gen_charging
+          display: PV&Gen Charging
+          value: 17
+        - name: pv_gen_charging_gen_bypass
+          display: PV&Gen Charging + Gen Bypass
+          value: 18
+        - name: pv_charging_gen_bypass
+          display: PV Charging + Gen Bypass
+          value: 19
+        - name: gen_bypass
+          display: Gen Bypass
+          value: 20
+        - name: pv_export_to_grid
+          display: PV Export to Grid
+          value: 21
+        - name: pv_export_to_grid_loads_supporting
+          display: PV Export to Grid + Loads Supporting
+          value: 22
+        - name: pv_charging_export_to_grid
+          display: PV Charging_Export to Grid
+          value: 23
+        - name: pv_charging_export_to_grid_loads_supporting
+          display: PV Charging_Export to Grid + Loads Supporting
+          value: 24
+        - name: battery_export_to_grid
+          display: Battery Export to Grid
+          value: 25
+        - name: battery_export_to_grid__loads_supporting
+          display: Battery Export to Grid + Loads Supporting
+          value: 26
+        - name: battery_pv_export_to_grid
+          display: Battery&PV Export to Grid
+          value: 27
+        - name: battery_pv_export_to_grid_loads_supporting
+          display: Battery&PV Export to Grid + Loads Supporting
+          value: 28
+
+    - ac_input_voltage           /20/ uint16*0.1[V]
+    - ac_input_frequency         /21/ uint16*0.01[Hz]
+    - ac_input_active_power      /36/ uint32be*0.1[W]
+    - ac_input_apparent_power    /38/ uint32be*0.1[VA]
+
+    - ac_output_voltage          /22/ uint16*0.1[V]
+    - ac_output_frequency        /23/ uint16*0.01[Hz]
+    - ac_output_active_power     / 9/ uint32be*0.1[W]
+    - ac_output_apparent_power   /11/ uint32be*0.1[VA]
+    - ac_output_current          /34/ uint16*0.1[A]
+
+    - pv1_voltage                / 1/ uint16*0.1[V]
+    - pv1_buck_current           / 7/ uint16*0.1[A]
+    - pv1_power                  / 3/ uint32be*0.1[W]
+
+    - pv2_voltage                / 2/ uint16*0.1[V]
+    - pv2_buck_current           / 8/ uint16*0.1[A]
+    - pv2_power                  / 5/ uint32be*0.1[W]
+    
+    - pv_charger_total_energy    /50/ uint32be*100[Wh]
+
+    - load                       /27/ uint16*0.1[%]
+
+    - ac_charge_active_power     /13/ uint32be*0.1[W]
+    - ac_charge_apparent_power   /15/ uint32be*0.1[VA]
+    - ac_charger_total_energy    /58/ uint32be*100[Wh]
+
+    - battery_voltage            /17/ uint16*0.01[V]
+    - battery_power              /77/ int32be*0.1[W]
+    - battery_soc                /18/ uint16[%]
+
+    - bus_voltage                /19/ uint16*0.1[V]
+
+    - inverter_temperature       /25/ int16*0.1[C]
+    - dcdc_temperature           /26/ int16*0.1[C]
+    - buck1_temperature          /32/ int16*0.1[C]
+    - buck2_temperature          /33/ int16*0.1[C]
+
+    - Inv_Curr                   /35/ uint16*0.1[A]
+    - Bat_DisChrWatt             /73/ uint32be*0.1[W]
+
+    - fault_bit                  /40/ uint16
+    - warning_bit                /41/ uint16
+
+    - bat_discharge_total_energy    /62/ uint32be*100[Wh]
+    - ac_discharge_total_energy     /66/ uint32be*100[Wh]
+    - output_discharge_total_energy /87/ uint32be*100[Wh]
+
+    - ac_charger_battery_current    /68/ uint16*0.1[A]
+    - total_charger_battery_current /83/ uint16*0.1[A]
+    - ParaChgCurr                   /90/ uint16*0.1[A]
+
+    - mppt_fan_speed                /81/ uint16[%]
+    - inv_fan_speed                 /82/ uint16[%]
+
+    - bms_status            /200/ uint16
+    - bms_status2           /242/ uint16
+    - bms_voltage           /204/ uint16*0.01[V]
+    - bms_current           /205/ int16*0.1[A]
+    - bms_temp              /206/ int16*0.1[°C]
+    - bms_max_current       /207/ uint16*0.01[A]
+    - bms_requested_voltage /208/ uint16*0.01[V]
+    - bms_max_cell_voltage  /243/ uint16*0.001[V]
+    - bms_min_cell_voltage  /244/ uint16*0.001[V]
+    - bms_max_cell_temp     /251/ int16*0.1[°C]
