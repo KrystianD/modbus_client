@@ -27,32 +27,39 @@ class IDeviceRegister:
 
 
 def parse_register_def(reg_def: str) -> Optional[Dict[str, Any]]:
+    reg_def_str, *options_str = reg_def.split(',')
+
+    options = {x.split('=')[0]: (x.split('=')[1]) for x in options_str}
+
     address_re = r"\s*(?P<address>0x[0-9a-fA-F]+|[0-9]+)\s*"
 
     # name/0x002a/float32be*0.1[unit]
-    m = re.match(rf"^([a-zA-Z0-9_ ]+)/{address_re}/([^*\[]+)(?:\*(?P<scale>[0-9.]+))?(?:\[(?P<unit>.+)])?$", reg_def)
+    m = re.match(rf"^([a-zA-Z0-9_ ]+)/{address_re}/([^*\[]+)(?:\*(?P<scale>[0-9.]+))?(?:\[(?P<unit>.+)])?$", reg_def_str)
     if m is not None:
         return dict(
                 name=m.group(1).strip(),
                 address=int(m.group("address"), 0),
                 type=RegisterValueType(m.group(3).strip().lower()),
                 scale=float(m.group("scale")) if m.group("scale") is not None else 1,
-                unit=m.group("unit"))
+                unit=m.group("unit"),
+                **options)
 
     # name/0x002a/float32be
-    m = re.match(rf"^([a-zA-Z0-9_ ]+)/{address_re}/(.+)$", reg_def)
+    m = re.match(rf"^([a-zA-Z0-9_ ]+)/{address_re}/(.+)$", reg_def_str)
     if m is not None:
         return dict(
                 name=m.group(1).strip(),
                 address=int(m.group("address"), 0),
-                type=RegisterValueType(m.group(3).strip().lower()))
+                type=RegisterValueType(m.group(3).strip().lower()),
+                **options)
 
     # name/0x002a
-    m = re.match(rf"^([a-zA-Z0-9_ ]+)/{address_re}$", reg_def)
+    m = re.match(rf"^([a-zA-Z0-9_ ]+)/{address_re}$", reg_def_str)
     if m is not None:
         return dict(
                 name=m.group(1).strip(),
-                address=int(m.group("address"), 0))
+                address=int(m.group("address"), 0),
+                **options)
 
     return None
 
