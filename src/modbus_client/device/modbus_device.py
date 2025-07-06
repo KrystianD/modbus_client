@@ -79,6 +79,24 @@ class ModbusDevice:
 
         return modbus_register.get_value_from_read_session(read_session)
 
+    async def read_registers(self, client: AsyncModbusClient, unit: int, registers: List[Union[str, IDeviceRegister]]) \
+            -> Dict[str, Union[float, int, bool]]:
+        modbus_registers = []
+        for register in registers:
+            if isinstance(register, IDeviceRegister):
+                modbus_registers.append(create_modbus_register(self._device_config, register))
+            elif isinstance(register, str):
+                modbus_registers.append(self.get_numeric_register(register))
+            else:
+                raise Exception("Invalid register type")
+
+        read_session = await client.read_registers(unit=unit,
+                                                   registers=modbus_registers,
+                                                   allow_holes=self._device_config.allow_holes,
+                                                   max_read_size=self._device_config.max_read_size)
+
+        return {x.name: x.get_value_from_read_session(read_session) for x in modbus_registers}
+
     async def write_register(self, client: AsyncModbusClient, unit: int, register: Union[str, IDeviceRegister],
                              value: Union[float, int]) -> None:
         if isinstance(register, IDeviceRegister):
