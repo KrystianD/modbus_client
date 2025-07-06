@@ -22,8 +22,7 @@ def create_modbus_register(device: DeviceConfig, register: IDeviceRegister) -> N
         raise Exception("invalid type")
 
     return NumericRegister(name=register.name, reg_type=reg_type, value_type=register.type,
-                           address=address, scale=register.scale, unit=register.unit,
-                           byte_span=register.byte_span)
+                           address=address, scale=register.scale, unit=register.unit)
 
 
 def create_modbus_coil(device: DeviceConfig, register: DeviceSwitch) -> Coil:
