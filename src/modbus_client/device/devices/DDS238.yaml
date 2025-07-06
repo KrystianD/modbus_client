@@ -36,7 +36,7 @@ registers:
       unit: W
       scale: 1
       address: 0x000e
-      type: uint16
+      type: int16
       
     - name: reactive_power
       unit: VAr
