@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List, Dict
 
 from modbus_client.client.async_modbus_client import AsyncModbusClient
 from modbus_client.client.registers import NumericRegister, Coil
@@ -22,7 +22,8 @@ def create_modbus_register(device: DeviceConfig, register: IDeviceRegister) -> N
         raise Exception("invalid type")
 
     return NumericRegister(name=register.name, reg_type=reg_type, value_type=register.type,
-                           address=address, scale=register.scale, unit=register.unit)
+                           address=address, scale=register.scale, unit=register.unit,
+                           byte_span=register.byte_span)
 
 
 def create_modbus_coil(device: DeviceConfig, register: DeviceSwitch) -> Coil:
@@ -71,7 +72,10 @@ class ModbusDevice:
         else:
             raise Exception("Invalid register type")
 
-        read_session = await client.read_registers(unit=unit, registers=[modbus_register])
+        read_session = await client.read_registers(unit=unit,
+                                                   registers=[modbus_register],
+                                                   allow_holes=self._device_config.allow_holes,
+                                                   max_read_size=self._device_config.max_read_size)
 
         return modbus_register.get_value_from_read_session(read_session)
 
