@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import datetime
 import json
+import logging
 import os
 import sys
 from dataclasses import dataclass
@@ -22,7 +23,6 @@ root_dir = os.path.join(script_dir, "../../..")
 
 DeviceCreationResult = Tuple[ModbusDevice, int, AsyncModbusClient]
 
-
 @dataclass
 class Args:
     format: str
@@ -40,6 +40,7 @@ class Args:
     interval: float
     timeout: float
     silent_interval: float
+    verbose: bool
 
 
 def create_device_from_args(args: Args) -> DeviceCreationResult:
@@ -305,6 +306,7 @@ async def main() -> None:
     argparser.add_argument("--format", type=str, choices=("raw", "pretty", "json"), default="pretty")
     argparser.add_argument("--timeout", type=float, default=3)
     argparser.add_argument("--silent-interval", type=float)
+    argparser.add_argument("-v", "--verbose", action='store_true')
 
     mode_subparser = argparser.add_subparsers(title='standalone device', description='valid subcommands')
     dev_p = mode_subparser.add_parser("device")
@@ -384,6 +386,8 @@ async def main() -> None:
     add_commands_parser(system_p)
 
     args = cast(Args, argparser.parse_args())
+
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="[%(asctime)s] [%(name)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
     if "create_device" not in cast(Any, args):
         argparser.print_help()

@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import logging
 from concurrent.futures.thread import ThreadPoolExecutor
 from typing import List, cast, Any, Callable, Optional
 
@@ -55,6 +56,7 @@ class PyAsyncModbusClient(AsyncModbusClient):
             raise ReadErrorException(str(result))
 
     async def read_input_registers(self, unit: int, address: int, count: int) -> List[int]:
+        logging.debug(f"read {address} count: {count}")
         result = await self._run(self.client.read_input_registers, slave=unit, address=address, count=count)
         if isinstance(result, pymodbus.register_read_message.ReadInputRegistersResponse):
             if len(result.registers) != count:
