@@ -1,7 +1,7 @@
 Modbus client for Python
 -----
 
-Device oriented Modbus client. As opposed to bare modbus clients, it focuses on data meaning and data types. Uses pymodbus under the hood.
+Device oriented Modbus client library, CLI tool and WebUI. As opposed to bare modbus clients, it focuses on data meaning and data types. Uses pymodbus under the hood.
 
 Supported data types:
 
@@ -129,6 +129,24 @@ asyncio.run(main())
 python -m cli device config.yaml <connection-params> --unit 1 read voltage
 python -m cli device config.yaml <connection-params> --unit 1 read energy
 ```
+
+#### WebUI usage:
+
+`server.yaml`
+```yaml
+device_file: GROWATT_SPF6000ES
+
+unit: 1
+tcp:
+  host: 10.5.14.60
+  port: 4196
+```
+
+```bash
+python -m server --config server.yaml
+```
+
+<a href=".docs/webui.jpg"><img src=".docs/webui.jpg" alt="webui" height="600"/></a>
 
 #### Features
 

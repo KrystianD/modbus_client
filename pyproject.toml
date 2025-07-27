@@ -10,16 +10,20 @@ authors = [
     { name = "Krystian Dużyński" },
 ]
 
-dynamic = ["dependencies"]
+dynamic = ["dependencies", "optional-dependencies"]
 
 [project.urls]
 repository = "https://github.com/KrystianD/modbus_client"
 
 [project.scripts]
 modbus-cli = "modbus_client.cli.__main__:main_cli"
+modbus-server = "modbus_client.server.__main__:main"
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
+
+[tool.setuptools.dynamic.optional-dependencies]
+server = {file = ["requirements_server.txt"]}
 
 [tool.setuptools.packages.find]
 where = ["src"]

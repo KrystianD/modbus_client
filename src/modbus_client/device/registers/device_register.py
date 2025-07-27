@@ -29,6 +29,7 @@ class IDeviceRegister(BaseModel):
     flags: Optional[List[FlagDefinition]] = None
     words: Annotated[int, Field(default=0, gt=0)]
     bit: int = 0
+    description: str = ""
 
     @field_validator('bits', mode='before')
     @classmethod
