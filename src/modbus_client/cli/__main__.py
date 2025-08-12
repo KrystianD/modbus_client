@@ -302,7 +302,7 @@ async def main() -> None:
     argparser = argparse.ArgumentParser()
 
     argparser.add_argument("--format", type=str, choices=("raw", "pretty", "json"), default="pretty")
-    argparser.add_argument("--timeout", type=int, default=3)
+    argparser.add_argument("--timeout", type=float, default=3)
     argparser.add_argument("--silent-interval", type=float)
 
     mode_subparser = argparser.add_subparsers(title='standalone device', description='valid subcommands')
