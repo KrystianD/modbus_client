@@ -1,12 +1,7 @@
-class ReadErrorException(Exception):
-    pass
-
-
-class WriteErrorException(Exception):
+class ModbusException(Exception):
     pass
 
 
 __all__ = [
-    "ReadErrorException",
-    "WriteErrorException",
+    "ModbusException",
 ]
