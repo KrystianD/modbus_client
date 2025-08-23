@@ -59,6 +59,10 @@ class IRegister(AddressRange):
     def format(self, read_session: ModbusReadSession) -> str:
         pass
 
+    @abstractmethod
+    def get_value_from_read_session(self, read_session: ModbusReadSession) -> Union[int, float]:
+        pass
+
     def get_raw_from_read_session(self, read_session: ModbusReadSession) -> int:
         reg_type_converter = get_type_format(self.value_type)
         count = struct.calcsize(reg_type_converter.format_str) // 2
@@ -117,6 +121,9 @@ class Coil(IRegister):
                          bits=None)
         self.count = 8
         self.number = number
+
+    def get_value_from_read_session(self, read_session: ModbusReadSession) -> Union[int, float]:
+        return 1 if self.get_from_read_session(read_session) else 0
 
     def get_from_read_session(self, read_session: ModbusReadSession) -> bool:
         value = read_session.registers_dict[(self.reg_type, self.number)]
