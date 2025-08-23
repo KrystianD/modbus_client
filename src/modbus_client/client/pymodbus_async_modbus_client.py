@@ -29,7 +29,7 @@ class PyAsyncModbusClient(AsyncModbusClient):
         result = await self._run(self.client.read_coils, slave=unit, address=address, count=bytes_count)
         if isinstance(result, pymodbus.bit_read_message.ReadCoilsResponse):
             if result.byte_count != bytes_count:
-                raise ReadErrorException
+                raise ReadErrorException("invalid count")
 
             # noinspection PyTypeChecker
             return cast(List[bool], result.bits[:count])
@@ -40,7 +40,7 @@ class PyAsyncModbusClient(AsyncModbusClient):
         result = await self._run(self.client.read_discrete_inputs, slave=unit, address=address, count=count)
         if isinstance(result, pymodbus.bit_read_message.ReadDiscreteInputsResponse):
             if result.byte_count != count:
-                raise ReadErrorException
+                raise ReadErrorException("invalid count")
 
             values = []
             for byte_i in range(count):
@@ -58,7 +58,7 @@ class PyAsyncModbusClient(AsyncModbusClient):
         result = await self._run(self.client.read_input_registers, slave=unit, address=address, count=count)
         if isinstance(result, pymodbus.register_read_message.ReadInputRegistersResponse):
             if len(result.registers) != count:
-                raise ReadErrorException
+                raise ReadErrorException("invalid count")
             # noinspection PyTypeChecker
             return cast(List[int], result.registers)
         else:
@@ -68,7 +68,7 @@ class PyAsyncModbusClient(AsyncModbusClient):
         result = await self._run(self.client.read_holding_registers, slave=unit, address=address, count=count)
         if isinstance(result, pymodbus.register_read_message.ReadHoldingRegistersResponse):
             if len(result.registers) != count:
-                raise ReadErrorException
+                raise ReadErrorException("invalid count")
             # noinspection PyTypeChecker
             return cast(List[int], result.registers)
         else:

@@ -148,7 +148,8 @@ async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, u
                                                    max_read_size=device_config.max_read_size)
         except Exception as e:
             if interval is None:
-                raise e
+                print(f"ERROR: {e}")
+                exit(1)
             else:
                 if format == "pretty":
                     date_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
