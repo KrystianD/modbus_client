@@ -117,6 +117,7 @@ async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, u
                 print(f"{modbus_register.format(read_ses)}")
 
         if format == "json":
+            data: Any
             if show_register_names:
                 data = {}
             else:
