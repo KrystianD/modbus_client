@@ -1,11 +1,23 @@
 from dataclasses import dataclass
-from typing import List, Optional, Sequence
+from typing import List, Optional, Sequence, Protocol
+
+
+class AddressRangeTrait(Protocol):
+    def get_address(self) -> int: ...
+
+    def get_count(self) -> int: ...
 
 
 @dataclass
-class AddressRange:
+class AddressRange(AddressRangeTrait):
     address: int
     count: int
+
+    def get_address(self) -> int:
+        return self.address
+
+    def get_count(self) -> int:
+        return self.count
 
     @property
     def first_address(self) -> int:
@@ -16,13 +28,13 @@ class AddressRange:
         return self.address + self.count - 1
 
 
-def merge_address_ranges(registers: Sequence[AddressRange], allow_holes: bool, max_read_size: int) \
+def merge_address_ranges(registers: Sequence[AddressRangeTrait], allow_holes: bool, max_read_size: int) \
         -> List[AddressRange]:
     buckets: List[AddressRange] = []
     cur_rng: Optional[AddressRange] = None
 
-    for register in sorted(registers, key=lambda x: (x.address, -x.count)):
-        rng = AddressRange(register.address, register.count)
+    for register in sorted(registers, key=lambda x: (x.get_address(), -x.get_count())):
+        rng = AddressRange(register.get_address(), register.get_count())
 
         if cur_rng is not None and rng.first_address >= cur_rng.first_address and rng.last_address <= cur_rng.last_address:
             continue

@@ -12,8 +12,8 @@ from modbus_client.cli.argument_parsers import interval_parser, mode_parser, Mod
 from modbus_client.cli.system_file import load_system_config
 from modbus_client.client.async_modbus_client import AsyncModbusClient
 from modbus_client.client.pymodbus_async_modbus_client import PyAsyncModbusTcpClient, PyAsyncModbusRtuClient, PyAsyncModbusRtuOverTcpClient
-from modbus_client.client.registers import IRegister
-from modbus_client.client.types import ModbusReadSession
+from modbus_client.registers.read_session import ModbusReadSession
+from modbus_client.registers.registers import IRegister
 from modbus_client.device.device_config import DeviceHoldingRegister, DeviceSwitch, DeviceConfig, DeviceInputRegister, \
     IDeviceRegister
 from modbus_client.device.modbus_device import create_modbus_register, ModbusDevice, create_modbus_coil
@@ -146,8 +146,9 @@ async def query_device(device_config: DeviceConfig, client: AsyncModbusClient, u
         read_num += 1
 
         try:
-            read_ses = await client.read_registers(unit=unit, registers=modbus_registers, allow_holes=device_config.allow_holes,
-                                                   max_read_size=device_config.max_read_size)
+            read_ses = await ModbusReadSession.read_registers(client=client, unit=unit, registers=modbus_registers,
+                                                              allow_holes=device_config.allow_holes,
+                                                              max_read_size=device_config.max_read_size)
         except Exception as e:
             if interval is None:
                 print(f"ERROR: {e}")

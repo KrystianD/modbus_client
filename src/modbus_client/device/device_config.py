@@ -9,7 +9,7 @@ from pydantic import StrictInt, StrictFloat, validator
 from pydantic.dataclasses import dataclass
 
 from modbus_client.client.async_modbus_client import DefaultMaxReadSize
-from modbus_client.client.types import RegisterValueType
+from modbus_client.registers.register_value_type import RegisterValueType
 
 
 class ValueRegisterTypeEnum(str, Enum):

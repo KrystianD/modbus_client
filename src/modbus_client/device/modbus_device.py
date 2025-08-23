@@ -1,8 +1,9 @@
 from typing import Union, List, Dict
 
 from modbus_client.client.async_modbus_client import AsyncModbusClient
-from modbus_client.client.registers import NumericRegister, Coil
-from modbus_client.client.types import RegisterType
+from modbus_client.registers.read_session import ModbusReadSession
+from modbus_client.registers.registers import NumericRegister, Coil
+from modbus_client.client.types import ModbusRegisterType
 from modbus_client.device.device_config import DeviceConfig, IDeviceRegister, DeviceInputRegister, \
     DeviceHoldingRegister, \
     load_device_config, load_device_config_from_yaml, DeviceSwitch, \
@@ -15,9 +16,9 @@ def create_modbus_register(device: DeviceConfig, register: IDeviceRegister) -> N
     address = register.address - zero_offset
 
     if isinstance(register, DeviceInputRegister):
-        reg_type = RegisterType.InputRegister
+        reg_type = ModbusRegisterType.InputRegister
     elif isinstance(register, DeviceHoldingRegister):
-        reg_type = RegisterType.HoldingRegister
+        reg_type = ModbusRegisterType.HoldingRegister
     else:
         raise Exception("invalid type")
 
@@ -30,7 +31,7 @@ def create_modbus_coil(device: DeviceConfig, register: DeviceSwitch) -> Coil:
     number = register.number - zero_offset
 
     if register.type == SwitchRegisterTypeEnum.Coil:
-        reg_type = RegisterType.Coil
+        reg_type = ModbusRegisterType.Coil
     else:
         raise Exception("invalid type")
 
@@ -71,10 +72,10 @@ class ModbusDevice:
         else:
             raise Exception("Invalid register type")
 
-        read_session = await client.read_registers(unit=unit,
-                                                   registers=[modbus_register],
-                                                   allow_holes=self._device_config.allow_holes,
-                                                   max_read_size=self._device_config.max_read_size)
+        read_session = await ModbusReadSession.read_registers(client=client, unit=unit,
+                                                              registers=[modbus_register],
+                                                              allow_holes=self._device_config.allow_holes,
+                                                              max_read_size=self._device_config.max_read_size)
 
         return modbus_register.get_value_from_read_session(read_session)
 
@@ -89,10 +90,11 @@ class ModbusDevice:
             else:
                 raise Exception("Invalid register type")
 
-        read_session = await client.read_registers(unit=unit,
-                                                   registers=modbus_registers,
-                                                   allow_holes=self._device_config.allow_holes,
-                                                   max_read_size=self._device_config.max_read_size)
+        read_session = await ModbusReadSession.read_registers(client=client,
+                                                              unit=unit,
+                                                              registers=modbus_registers,
+                                                              allow_holes=self._device_config.allow_holes,
+                                                              max_read_size=self._device_config.max_read_size)
 
         return {x.name: x.get_value_from_read_session(read_session) for x in modbus_registers}
 
@@ -120,7 +122,7 @@ class ModbusDevice:
         else:
             raise Exception("Invalid switch type")
 
-        read_session = await client.read_registers(unit=unit, registers=[modbus_register])
+        read_session = await ModbusReadSession.read_registers(client=client, unit=unit, registers=[modbus_register])
 
         return modbus_register.get_from_read_session(read_session)
 
