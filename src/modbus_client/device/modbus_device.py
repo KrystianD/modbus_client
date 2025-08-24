@@ -1,13 +1,12 @@
 from typing import Union, List, Dict
 
 from modbus_client.client.async_modbus_client import AsyncModbusClient
+from modbus_client.device.registers.device_register import DeviceInputRegister, DeviceHoldingRegister, SwitchRegisterTypeEnum, \
+    IDeviceRegister, DeviceSwitch
 from modbus_client.registers.read_session import ModbusReadSession
-from modbus_client.registers.registers import NumericRegister, Coil, IRegister
+from modbus_client.registers.registers import NumericRegister, Coil, IRegister, EnumValue
 from modbus_client.client.types import ModbusRegisterType
-from modbus_client.device.device_config import DeviceConfig, IDeviceRegister, DeviceInputRegister, \
-    DeviceHoldingRegister, \
-    load_device_config, load_device_config_from_yaml, DeviceSwitch, \
-    SwitchRegisterTypeEnum
+from modbus_client.device.device_config import DeviceConfig, load_device_config, load_device_config_from_yaml
 from modbus_client.device.device_config_finder import find_device_file
 
 

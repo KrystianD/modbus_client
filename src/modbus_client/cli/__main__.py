@@ -12,10 +12,10 @@ from modbus_client.cli.argument_parsers import interval_parser, mode_parser, Mod
 from modbus_client.cli.system_file import load_system_config
 from modbus_client.client.async_modbus_client import AsyncModbusClient
 from modbus_client.client.pymodbus_async_modbus_client import PyAsyncModbusTcpClient, PyAsyncModbusRtuClient, PyAsyncModbusRtuOverTcpClient
+from modbus_client.device.registers.device_register import IDeviceRegister, DeviceHoldingRegister, DeviceInputRegister, DeviceSwitch
 from modbus_client.registers.read_session import ModbusReadSession
 from modbus_client.registers.registers import IRegister
-from modbus_client.device.device_config import DeviceHoldingRegister, DeviceSwitch, DeviceConfig, DeviceInputRegister, \
-    IDeviceRegister
+from modbus_client.device.device_config import DeviceConfig
 from modbus_client.device.modbus_device import create_modbus_register, ModbusDevice, create_modbus_coil, ModbusDeviceFactory
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
