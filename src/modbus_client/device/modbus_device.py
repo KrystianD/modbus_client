@@ -27,10 +27,12 @@ def create_modbus_register(device: DeviceConfig, register: IDeviceRegister) -> U
     if register.type == RegisterType.ENUM:
         assert register.enum is not None
         return EnumRegister(name=register.name, reg_type=reg_type, value_type=RegisterValueType.U16,
-                            address=address, enum=register.enum)
+                            address=address, enum=register.enum,
+                            bits=register.bits.bits if register.bits is not None else None)
     else:
         return NumericRegister(name=register.name, reg_type=reg_type, value_type=RegisterValueType(register.type),
-                               address=address, scale=register.scale, unit=register.unit)
+                               address=address, scale=register.scale, unit=register.unit,
+                               bits=register.bits.bits if register.bits is not None else None)
 
 
 def create_modbus_coil(device: DeviceConfig, register: DeviceSwitch) -> Coil:
@@ -139,7 +141,11 @@ class ModbusDevice:
 
         modbus_register = self.create_modbus_register(register)
 
-        modbus_values = modbus_register.value_to_modbus_registers(value)
+        ses = ModbusReadSession()
+        if modbus_register.requires_existing_reading():
+            ses = await ModbusReadSession.read_registers(client=client, unit=self._unit, registers=[modbus_register])
+
+        modbus_values = modbus_register.value_to_modbus_registers(value, ses)
 
         if self._device_config.force_multiple_write or len(modbus_values) > 1:
             await client.write_holding_registers(unit=self._unit, address=modbus_register.address, values=modbus_values)

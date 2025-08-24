@@ -15,8 +15,18 @@ BitsArray = List[int]
 
 def get_bits(value: int, bits: BitsArray) -> int:
     final_value = 0
-    for i, bit in enumerate(reversed(bits)):
+    for i, bit in enumerate(bits):
         final_value |= ((value >> bit) & 0x01) << i
+    return final_value
+
+
+def put_bits(bits: BitsArray, value: int, existing_value: int) -> int:
+    final_value = existing_value
+
+    for i, bit in enumerate(bits):
+        final_value &= ~(1 << bit)
+        final_value |= ((value >> i) & 0x01) << bit
+
     return final_value
 
 
@@ -43,6 +53,10 @@ class IRegister(AddressRangeTrait):
         self.value_type = value_type
         self.bits = bits
 
+        if self.bits is not None:
+            if self.value_type not in (RegisterValueType.U16,):
+                raise ValueError("Bitfields only support uint16 type")
+
     def get_address(self) -> int:
         return self.address
 
@@ -51,6 +65,9 @@ class IRegister(AddressRangeTrait):
 
     def get_reg_type(self) -> ModbusRegisterType:
         return self.reg_type
+
+    def requires_existing_reading(self) -> bool:
+        return self.bits is not None
 
     @abstractmethod
     def format(self, read_session: ModbusReadSession) -> str:
@@ -61,6 +78,33 @@ class IRegister(AddressRangeTrait):
         pass
 
     def get_raw_from_read_session(self, read_session: ModbusReadSession) -> int:
+        val = self._get_base_value_from_read_session(read_session)
+
+        if self.bits is None:
+            return val
+        else:
+            return get_bits(val, self.bits)
+
+    def value_to_modbus_registers(self, value: Union[int, float, str], existing_read_session: ModbusReadSession | None) -> List[int]:
+        reg_type_converter = get_type_converter(self.value_type)
+        count = struct.calcsize(reg_type_converter.format_str) // 2
+
+        if self.bits:
+            assert existing_read_session is not None
+            assert isinstance(value, int)
+            existing_value = self._get_base_value_from_read_session(existing_read_session)
+            value = put_bits(self.bits, value, existing_value)
+
+        raw_value = reg_type_converter.converter_func(value)
+        value_bytes = struct.pack("<" + reg_type_converter.format_str, raw_value)
+
+        registers_unordered = list(struct.unpack("<" + "H" * count, value_bytes))
+        registers_ordered = registers_unordered if not reg_type_converter.reverse_bytes else list(
+                reversed(registers_unordered))
+
+        return registers_ordered
+
+    def _get_base_value_from_read_session(self, read_session: ModbusReadSession) -> int:
         reg_type_converter = get_type_converter(self.value_type)
         count = struct.calcsize(reg_type_converter.format_str) // 2
 
@@ -70,22 +114,7 @@ class IRegister(AddressRangeTrait):
         value_bytes = struct.pack("<" + "H" * count, *registers_ordered)
         val = cast(int, struct.unpack("<" + reg_type_converter.format_str, value_bytes)[0])
 
-        if self.bits is None:
-            return val
-        else:
-            return get_bits(val, self.bits)
-
-    def value_to_modbus_registers(self, value: Union[int, float, str]) -> List[int]:
-        reg_type_converter = get_type_converter(self.value_type)
-        count = struct.calcsize(reg_type_converter.format_str) // 2
-
-        raw_value = reg_type_converter.converter_func(value)
-        value_bytes = struct.pack("<" + reg_type_converter.format_str, raw_value)
-        registers_unordered = list(struct.unpack("<" + "H" * count, value_bytes))
-        registers_ordered = registers_unordered if not reg_type_converter.reverse_bytes else list(
-                reversed(registers_unordered))
-
-        return registers_ordered
+        return val
 
 
 class NumericRegister(IRegister):
@@ -100,9 +129,10 @@ class NumericRegister(IRegister):
         num = super().get_raw_from_read_session(read_session)
         return num * self.scale
 
-    def value_to_modbus_registers(self, value: Union[int, float, str]) -> List[int]:
+    def value_to_modbus_registers(self, value: Union[int, float, str], existing_read_session: ModbusReadSession | None) -> List[int]:
         assert isinstance(value, (int, float)), "value must be int or float"
-        return super().value_to_modbus_registers(value / self.scale)
+        return super().value_to_modbus_registers((value / self.scale) if self.scale != 1 else value,
+                                                 existing_read_session=existing_read_session)
 
     def format(self, read_session: ModbusReadSession) -> str:
         value = self.get_value_from_read_session(read_session)
@@ -131,7 +161,7 @@ class EnumRegister(IRegister):
         else:
             return EnumValue(enum_name=enum_def.name, enum_value=value, enum_display=enum_def.display)
 
-    def value_to_modbus_registers(self, value: Union[int, float, str]) -> List[int]:
+    def value_to_modbus_registers(self, value: Union[int, float, str], existing_read_session: ModbusReadSession | None) -> List[int]:
         assert isinstance(value, (int, str)), "value must be int or string"
 
         if isinstance(value, str):
@@ -139,9 +169,9 @@ class EnumRegister(IRegister):
             if enum_def is None:
                 raise ValueError(f"Enum {value} not found")
             else:
-                return super().value_to_modbus_registers(enum_def.value)
+                return super().value_to_modbus_registers(enum_def.value, existing_read_session=existing_read_session)
         elif isinstance(value, int):
-            return super().value_to_modbus_registers(value)
+            return super().value_to_modbus_registers(value, existing_read_session=existing_read_session)
         else:
             raise ValueError(f"Unknown value type {type(value)}")
 

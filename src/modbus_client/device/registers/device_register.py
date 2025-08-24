@@ -7,8 +7,8 @@ from pydantic import StrictInt, StrictFloat, field_validator, model_validator, S
 from pydantic.dataclasses import dataclass
 
 from modbus_client.device.registers.enum_definition import EnumDefinition
+from modbus_client.registers.bitarray import BitArray
 from modbus_client.device.registers.register_type import RegisterType
-
 
 class ValueRegisterTypeEnum(str, Enum):
     InputRegister = 'input-register'
@@ -21,7 +21,13 @@ class IDeviceRegister(BaseModel):
     scale: Union[StrictInt, StrictFloat] = cast(StrictInt, 1)
     type: RegisterType = RegisterType.U16
     unit: Optional[str] = None
+    bits: Optional[BitArray] = None
     enum: Optional[List[EnumDefinition]] = None
+
+    @field_validator('bits', mode='before')
+    @classmethod
+    def parse_bits(cls, bits_str: Any) -> BitArray:
+        return BitArray.parse(bits_str)
 
     @model_validator(mode='after')
     def check(self) -> 'IDeviceRegister':
