@@ -2,7 +2,7 @@ from typing import Union, List, Dict
 
 from modbus_client.client.async_modbus_client import AsyncModbusClient
 from modbus_client.registers.read_session import ModbusReadSession
-from modbus_client.registers.registers import NumericRegister, Coil
+from modbus_client.registers.registers import NumericRegister, Coil, IRegister
 from modbus_client.client.types import ModbusRegisterType
 from modbus_client.device.device_config import DeviceConfig, IDeviceRegister, DeviceInputRegister, \
     DeviceHoldingRegister, \
@@ -38,12 +38,34 @@ def create_modbus_coil(device: DeviceConfig, register: DeviceSwitch) -> Coil:
     return Coil(name=register.name, reg_type=reg_type, number=number)
 
 
-class ModbusDevice:
+class ModbusDeviceFactory:
     def __init__(self, device_config: DeviceConfig):
         self._device_config = device_config
 
-    def get_config(self) -> DeviceConfig:
+    def create_device(self, unit: int) -> 'ModbusDevice':
+        return ModbusDevice(self._device_config, unit)
+
+    @staticmethod
+    def from_file(path: str) -> 'ModbusDeviceFactory':
+        device = load_device_config(find_device_file(path))
+        return ModbusDeviceFactory(device)
+
+    @staticmethod
+    def from_config(config: str) -> 'ModbusDeviceFactory':
+        device = load_device_config_from_yaml(config)
+        return ModbusDeviceFactory(device)
+
+
+class ModbusDevice:
+    def __init__(self, device_config: DeviceConfig, unit: int):
+        self._device_config = device_config
+        self._unit = unit
+
+    def get_device_config(self) -> DeviceConfig:
         return self._device_config
+
+    def get_unit(self) -> int:
+        return self._unit
 
     def get_register(self, name: str) -> IDeviceRegister:
         reg = self._device_config.find_register(name)
@@ -55,98 +77,70 @@ class ModbusDevice:
         assert switch is not None
         return switch
 
-    def get_numeric_register(self, name: str) -> NumericRegister:
-        reg = self.get_register(name)
-        return create_modbus_register(self._device_config, reg)
-
-    def get_switch_register(self, name: str) -> Coil:
-        switch = self.get_switch(name)
-        return create_modbus_coil(self._device_config, switch)
-
-    async def read_register(self, client: AsyncModbusClient, unit: int, register: Union[str, IDeviceRegister]) \
-            -> Union[float, int, bool]:
+    def create_modbus_register(self, register: Union[str, IDeviceRegister]) -> IRegister:
         if isinstance(register, IDeviceRegister):
-            modbus_register = create_modbus_register(self._device_config, register)
+            return create_modbus_register(self._device_config, register)
         elif isinstance(register, str):
-            modbus_register = self.get_numeric_register(register)
+            return create_modbus_register(self._device_config, self.get_register(register))
         else:
             raise Exception("Invalid register type")
 
-        read_session = await ModbusReadSession.read_registers(client=client, unit=unit,
+    def create_modbus_switch(self, switch: Union[str, DeviceSwitch]) -> Coil:
+        if isinstance(switch, DeviceSwitch):
+            return create_modbus_coil(self._device_config, switch)
+        elif isinstance(switch, str):
+            return create_modbus_coil(self._device_config, self.get_switch(switch))
+        else:
+            raise Exception("Invalid switch type")
+
+    async def read_register(self, client: AsyncModbusClient, register: Union[str, IDeviceRegister]) \
+            -> Union[float, int, bool]:
+        modbus_register = self.create_modbus_register(register)
+
+        read_session = await ModbusReadSession.read_registers(client=client,
+                                                              unit=self._unit,
                                                               registers=[modbus_register],
                                                               allow_holes=self._device_config.allow_holes,
                                                               max_read_size=self._device_config.max_read_size)
 
         return modbus_register.get_value_from_read_session(read_session)
 
-    async def read_registers(self, client: AsyncModbusClient, unit: int, registers: List[Union[str, IDeviceRegister]]) \
+    async def read_registers(self, client: AsyncModbusClient, registers: List[Union[str, IDeviceRegister]]) \
             -> Dict[str, Union[float, int, bool]]:
-        modbus_registers = []
-        for register in registers:
-            if isinstance(register, IDeviceRegister):
-                modbus_registers.append(create_modbus_register(self._device_config, register))
-            elif isinstance(register, str):
-                modbus_registers.append(self.get_numeric_register(register))
-            else:
-                raise Exception("Invalid register type")
+        modbus_registers = [self.create_modbus_register(x) for x in registers]
 
         read_session = await ModbusReadSession.read_registers(client=client,
-                                                              unit=unit,
+                                                              unit=self._unit,
                                                               registers=modbus_registers,
                                                               allow_holes=self._device_config.allow_holes,
                                                               max_read_size=self._device_config.max_read_size)
 
         return {x.name: x.get_value_from_read_session(read_session) for x in modbus_registers}
 
-    async def write_register(self, client: AsyncModbusClient, unit: int, register: Union[str, IDeviceRegister],
+    async def write_register(self, client: AsyncModbusClient, register: Union[str, IDeviceRegister],
                              value: Union[float, int]) -> None:
-        if isinstance(register, IDeviceRegister):
-            modbus_register = create_modbus_register(self._device_config, register)
-        elif isinstance(register, str):
-            modbus_register = self.get_numeric_register(register)
-        else:
-            raise Exception("Invalid register type")
+        modbus_register = self.create_modbus_register(register)
 
         modbus_values = modbus_register.value_to_modbus_registers(value)
 
         if self._device_config.force_multiple_write or len(modbus_values) > 1:
-            await client.write_holding_registers(unit=unit, address=modbus_register.address, values=modbus_values)
+            await client.write_holding_registers(unit=self._unit, address=modbus_register.address, values=modbus_values)
         else:
-            await client.write_holding_register(unit=unit, address=modbus_register.address, value=modbus_values[0])
+            await client.write_holding_register(unit=self._unit, address=modbus_register.address, value=modbus_values[0])
 
-    async def read_switch(self, client: AsyncModbusClient, unit: int, switch: Union[str, DeviceSwitch]) -> bool:
-        if isinstance(switch, DeviceSwitch):
-            modbus_register = create_modbus_coil(self._device_config, switch)
-        elif isinstance(switch, str):
-            modbus_register = self.get_switch_register(switch)
-        else:
-            raise Exception("Invalid switch type")
+    async def read_switch(self, client: AsyncModbusClient, switch: Union[str, DeviceSwitch]) -> bool:
+        modbus_register = self.create_modbus_switch(switch)
 
-        read_session = await ModbusReadSession.read_registers(client=client, unit=unit, registers=[modbus_register])
+        read_session = await ModbusReadSession.read_registers(client=client, unit=self._unit, registers=[modbus_register])
 
         return modbus_register.get_from_read_session(read_session)
 
-    async def switch_set(self, client: AsyncModbusClient, unit: int, switch: Union[str, DeviceSwitch],
+    async def switch_set(self, client: AsyncModbusClient, switch: Union[str, DeviceSwitch],
                          value: bool) -> None:
-        if isinstance(switch, DeviceSwitch):
-            modbus_register = create_modbus_coil(self._device_config, switch)
-        elif isinstance(switch, str):
-            modbus_register = self.get_switch_register(switch)
-        else:
-            raise Exception("Invalid register type")
+        modbus_register = self.create_modbus_switch(switch)
 
-        await client.write_coil(unit=unit, address=modbus_register.number, value=value)
+        await client.write_coil(unit=self._unit, address=modbus_register.number, value=value)
 
-    async def switch_toggle(self, client: AsyncModbusClient, unit: int, switch: Union[str, DeviceSwitch]) -> None:
-        current_value = await self.read_switch(client, unit, switch)
-        await self.switch_set(client, unit, switch, not current_value)
-
-    @staticmethod
-    def create_from_file(path: str) -> 'ModbusDevice':
-        device = load_device_config(find_device_file(path))
-        return ModbusDevice(device)
-
-    @staticmethod
-    def create_from_config(config: str) -> 'ModbusDevice':
-        device = load_device_config_from_yaml(config)
-        return ModbusDevice(device)
+    async def switch_toggle(self, client: AsyncModbusClient, switch: Union[str, DeviceSwitch]) -> None:
+        current_value = await self.read_switch(client, switch)
+        await self.switch_set(client, switch, not current_value)
