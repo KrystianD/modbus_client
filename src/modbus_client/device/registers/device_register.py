@@ -3,10 +3,11 @@ from dataclasses import field
 from enum import Enum
 from typing import List, Optional, Union, cast, Any, Dict, Annotated
 
-from pydantic import StrictInt, StrictFloat, validator, StringConstraints, BaseModel
+from pydantic import StrictInt, StrictFloat, validator, model_validator, StringConstraints, BaseModel
 from pydantic.dataclasses import dataclass
 
-from modbus_client.registers.register_value_type import RegisterValueType
+from modbus_client.device.registers.enum_definition import EnumDefinition
+from modbus_client.device.registers.register_type import RegisterType
 
 
 class ValueRegisterTypeEnum(str, Enum):
@@ -18,8 +19,15 @@ class IDeviceRegister(BaseModel):
     name: Annotated[str, StringConstraints(pattern=r'^[a-zA-Z][a-zA-Z0-9_]*$')]
     address: int
     scale: Union[StrictInt, StrictFloat] = cast(StrictInt, 1)
-    type: RegisterValueType = RegisterValueType.U16
+    type: RegisterType = RegisterType.U16
     unit: Optional[str] = None
+    enum: Optional[List[EnumDefinition]] = None
+
+    @model_validator(mode='after')
+    def check(self) -> 'IDeviceRegister':
+        if self.type == RegisterType.ENUM and self.enum is None:
+            raise ValueError("register of type /enum/ requires /enum/ object with the definition")
+        return self
 
 
 def parse_options_str(options_strs: List[str]) -> Dict[str, Any]:
@@ -50,7 +58,7 @@ def parse_register_def(reg_def: str) -> Optional[Dict[str, Any]]:
         return dict(
                 name=m.group(1).strip(),
                 address=int(m.group("address"), 0),
-                type=RegisterValueType(m.group(3).strip().lower()),
+                type=RegisterType(m.group(3).strip().lower()),
                 scale=float(m.group("scale")) if m.group("scale") is not None else 1,
                 unit=m.group("unit"),
                 **options)
@@ -61,7 +69,7 @@ def parse_register_def(reg_def: str) -> Optional[Dict[str, Any]]:
         return dict(
                 name=m.group(1).strip(),
                 address=int(m.group("address"), 0),
-                type=RegisterValueType(m.group(3).strip().lower()),
+                type=RegisterType(m.group(3).strip().lower()),
                 **options)
 
     # name/0x002a

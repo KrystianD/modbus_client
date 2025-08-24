@@ -1,7 +1,9 @@
 import struct
 from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Union, List, Optional, cast
 
+from modbus_client.device.registers.enum_definition import EnumDefinition
 from modbus_client.registers.address_range import AddressRangeTrait
 from modbus_client.client.types import ModbusRegisterType
 from modbus_client.registers.type_converters import get_type_converter
@@ -16,6 +18,19 @@ def get_bits(value: int, bits: BitsArray) -> int:
     for i, bit in enumerate(reversed(bits)):
         final_value |= ((value >> bit) & 0x01) << i
     return final_value
+
+
+@dataclass
+class EnumValue:
+    enum_name: Optional[str]
+    enum_value: int
+    enum_display: Optional[str]
+
+    def format(self) -> str:
+        if self.enum_name is None:
+            return f"<unknown> ({self.enum_value})"
+        else:
+            return f"{self.enum_name} ({self.enum_value})"
 
 
 class IRegister(AddressRangeTrait):
@@ -42,7 +57,7 @@ class IRegister(AddressRangeTrait):
         pass
 
     @abstractmethod
-    def get_value_from_read_session(self, read_session: ModbusReadSession) -> Union[int, float]:
+    def get_value_from_read_session(self, read_session: ModbusReadSession) -> Union[int, float, EnumValue]:
         pass
 
     def get_raw_from_read_session(self, read_session: ModbusReadSession) -> int:
@@ -60,7 +75,7 @@ class IRegister(AddressRangeTrait):
         else:
             return get_bits(val, self.bits)
 
-    def value_to_modbus_registers(self, value: Union[int, float]) -> List[int]:
+    def value_to_modbus_registers(self, value: Union[int, float, str]) -> List[int]:
         reg_type_converter = get_type_converter(self.value_type)
         count = struct.calcsize(reg_type_converter.format_str) // 2
 
@@ -85,7 +100,8 @@ class NumericRegister(IRegister):
         num = super().get_raw_from_read_session(read_session)
         return num * self.scale
 
-    def value_to_modbus_registers(self, value: Union[int, float]) -> List[int]:
+    def value_to_modbus_registers(self, value: Union[int, float, str]) -> List[int]:
+        assert isinstance(value, (int, float)), "value must be int or float"
         return super().value_to_modbus_registers(value / self.scale)
 
     def format(self, read_session: ModbusReadSession) -> str:
@@ -95,6 +111,44 @@ class NumericRegister(IRegister):
             return f"{value}{unit_str}"
         elif isinstance(value, float):
             return f"{value:.3f}{unit_str}"
+
+
+class EnumRegister(IRegister):
+    def __init__(self, name: str, reg_type: ModbusRegisterType, address: int,
+                 value_type: RegisterValueType = RegisterValueType.U16, *, bits: Optional[BitsArray] = None,
+                 enum: List[EnumDefinition]) -> None:
+        super().__init__(name=name, reg_type=reg_type, address=address, value_type=value_type, bits=bits)
+
+        self.enum_by_value = {x.value: x for x in enum}
+        self.enum_by_name = {x.name: x for x in enum}
+
+    def get_value_from_read_session(self, read_session: ModbusReadSession) -> EnumValue:
+        value = super().get_raw_from_read_session(read_session)
+
+        enum_def = self.enum_by_value.get(value)
+        if enum_def is None:
+            return EnumValue(enum_name=None, enum_value=value, enum_display=None)
+        else:
+            return EnumValue(enum_name=enum_def.name, enum_value=value, enum_display=enum_def.display)
+
+    def value_to_modbus_registers(self, value: Union[int, float, str]) -> List[int]:
+        assert isinstance(value, (int, str)), "value must be int or string"
+
+        if isinstance(value, str):
+            enum_def = self.enum_by_name.get(value)
+            if enum_def is None:
+                raise ValueError(f"Enum {value} not found")
+            else:
+                return super().value_to_modbus_registers(enum_def.value)
+        elif isinstance(value, int):
+            return super().value_to_modbus_registers(value)
+        else:
+            raise ValueError(f"Unknown value type {type(value)}")
+
+    def format(self, read_session: ModbusReadSession) -> str:
+        enum_value = self.get_value_from_read_session(read_session)
+
+        return enum_value.format()
 
 
 class Coil(IRegister):

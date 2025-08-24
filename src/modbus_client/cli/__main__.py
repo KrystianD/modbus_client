@@ -218,10 +218,16 @@ async def handle_list(device_config: DeviceConfig) -> None:
     print("Input registers:")
     for holding_register in device_config.registers.input_registers:
         print("  ", holding_register.name)
+        if holding_register.enum is not None:
+            for enum_item in holding_register.enum:
+                print(f"    - {enum_item.name} = {enum_item.value}")
 
     print("Holding registers:")
     for input_register in device_config.registers.holding_registers:
         print("  ", input_register.name)
+        if input_register.enum is not None:
+            for enum_item in input_register.enum:
+                print(f"    - {enum_item.name} = {enum_item.value}")
 
     print("Coils:")
     for switch in device_config.switches:
@@ -267,7 +273,7 @@ async def handle_watch(client: AsyncModbusClient, device: ModbusDevice, names: L
 
 
 async def handle_write(client: AsyncModbusClient, device: ModbusDevice,
-                       name: str, value: float) -> None:
+                       name: str, value: Union[int, float, str]) -> None:
     register = device.get_device_config().find_register(name)
     if register is None:
         print("Register not found")
@@ -441,7 +447,7 @@ async def main() -> None:
                            format=args.format)
 
     if args.cmd == "write":
-        await handle_write(client, modbus_device, cast(str, args.name), float(args.value))
+        await handle_write(client, modbus_device, cast(str, args.name), args.value)
 
     if args.cmd == "enable":
         await handle_enable(client, modbus_device, cast(str, args.name))
