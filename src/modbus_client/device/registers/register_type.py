@@ -15,3 +15,4 @@ class RegisterType(str, Enum):
     F32BE = 'float32be'
     F32LE = 'float32le'
     ENUM = 'enum'
+    BOOL = 'bool'

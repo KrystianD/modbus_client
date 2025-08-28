@@ -10,6 +10,7 @@ from modbus_client.device.registers.enum_definition import EnumDefinition
 from modbus_client.registers.bitarray import BitArray
 from modbus_client.device.registers.register_type import RegisterType
 
+
 class ValueRegisterTypeEnum(str, Enum):
     InputRegister = 'input-register'
     HoldingRegister = 'holding-register'
@@ -23,6 +24,7 @@ class IDeviceRegister(BaseModel):
     unit: Optional[str] = None
     bits: Optional[BitArray] = None
     enum: Optional[List[EnumDefinition]] = None
+    bit: int = 0
 
     @field_validator('bits', mode='before')
     @classmethod
@@ -33,6 +35,8 @@ class IDeviceRegister(BaseModel):
     def check(self) -> 'IDeviceRegister':
         if self.type == RegisterType.ENUM and self.enum is None:
             raise ValueError("register of type /enum/ requires /enum/ object with the definition")
+        if self.type == RegisterType.BOOL and self.bit is None:
+            raise ValueError("register of type /bool/ requires /bit/ definition")
         return self
 
 

@@ -7,13 +7,13 @@ from modbus_client.device.registers.enum_definition import EnumDefinition
 from modbus_client.device.registers.register_type import RegisterType
 from modbus_client.registers.read_session import ModbusReadSession
 from modbus_client.registers.register_value_type import RegisterValueType
-from modbus_client.registers.registers import NumericRegister, Coil, IRegister, EnumValue, EnumRegister
+from modbus_client.registers.registers import NumericRegister, Coil, IRegister, EnumValue, EnumRegister, BoolRegister
 from modbus_client.client.types import ModbusRegisterType
 from modbus_client.device.device_config import DeviceConfig, load_device_config, load_device_config_from_yaml
 from modbus_client.device.device_config_finder import find_device_file
 
 
-def create_modbus_register(device: DeviceConfig, register: IDeviceRegister) -> Union[NumericRegister, EnumRegister]:
+def create_modbus_register(device: DeviceConfig, register: IDeviceRegister) -> Union[NumericRegister, EnumRegister, BoolRegister]:
     zero_offset = 0 if device.zero_mode else 1
     address = register.address - zero_offset
 
@@ -24,7 +24,10 @@ def create_modbus_register(device: DeviceConfig, register: IDeviceRegister) -> U
     else:
         raise Exception("invalid type")
 
-    if register.type == RegisterType.ENUM:
+    if register.type == RegisterType.BOOL:
+        assert register.bit is not None
+        return BoolRegister(name=register.name, reg_type=reg_type, address=address, bit=register.bit)
+    elif register.type == RegisterType.ENUM:
         assert register.enum is not None
         return EnumRegister(name=register.name, reg_type=reg_type, value_type=RegisterValueType.U16,
                             address=address, enum=register.enum,

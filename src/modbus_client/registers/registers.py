@@ -181,6 +181,29 @@ class EnumRegister(IRegister):
         return enum_value.format()
 
 
+class BoolRegister(IRegister):
+    def __init__(self, name: str, reg_type: ModbusRegisterType, address: int, bit: int) -> None:
+        super().__init__(name=name, reg_type=reg_type, address=address, value_type=RegisterValueType.U16, bits=[bit])
+
+    def requires_existing_reading(self) -> bool:
+        return True
+
+    def get_value_from_read_session(self, read_session: ModbusReadSession) -> bool:
+        value = super().get_raw_from_read_session(read_session)
+
+        return value != 0
+
+    def value_to_modbus_registers(self, value: Union[int, float, str], existing_read_session: ModbusReadSession | None) -> List[int]:
+        assert isinstance(value, (int, bool)), "value must be an int or boolean"
+
+        return super().value_to_modbus_registers(1 if value else 0, existing_read_session=existing_read_session)
+
+    def format(self, read_session: ModbusReadSession) -> str:
+        value = self.get_value_from_read_session(read_session)
+
+        return "true" if value else "false"
+
+
 class Coil(IRegister):
     def __init__(self, name: str, reg_type: ModbusRegisterType, number: int) -> None:
         super().__init__(name=name, reg_type=reg_type, address=number // 8 * 8, value_type=RegisterValueType.U16,
