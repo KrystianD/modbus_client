@@ -19,6 +19,7 @@ class ValueRegisterTypeEnum(str, Enum):
 class IDeviceRegister(BaseModel):
     name: Annotated[str, StringConstraints(pattern=r'^[a-zA-Z][a-zA-Z0-9_]*$')]
     address: int
+    readonly: bool = False
     scale: Union[StrictInt, StrictFloat] = cast(StrictInt, 1)
     type: RegisterType = RegisterType.U16
     unit: Optional[str] = None

@@ -131,6 +131,9 @@ class ModbusDevice:
 
     async def write_register(self, client: AsyncModbusClient, register: Union[str, IDeviceRegister],
                              value: Union[float, int, str, EnumDefinition]) -> None:
+        if register.readonly:
+            raise ValueError("cannot write to read-only register")
+
         if isinstance(value, EnumDefinition):
             value = value.value
 
