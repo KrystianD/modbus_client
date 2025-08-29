@@ -22,10 +22,25 @@ class IDeviceRegister(BaseModel):
     unit: Optional[str] = None
 
 
-def parse_register_def(reg_def: str) -> Optional[Dict[str, Any]]:
-    reg_def_str, *options_str = reg_def.split(',')
+def parse_options_str(options_strs: List[str]) -> Dict[str, Any]:
+    options: Dict[str, Any] = {}
 
-    options = {x.split('=')[0]: (x.split('=')[1]) for x in options_str}
+    for option_str in options_strs:
+        parts = option_str.split('=', 1)
+        if len(parts) == 1:
+            options[parts[0]] = True
+        elif len(parts) == 2:
+            options[parts[0]] = parts[1]
+        else:
+            raise ValueError("invalid options")
+
+    return options
+
+
+def parse_register_def(reg_def: str) -> Optional[Dict[str, Any]]:
+    reg_def_str, *options_strs = reg_def.split(',')
+
+    options = parse_options_str(options_strs)
 
     address_re = r"\s*(?P<address>0x[0-9a-fA-F]+|[0-9]+)\s*"
 
