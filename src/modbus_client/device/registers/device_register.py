@@ -3,7 +3,7 @@ from dataclasses import field
 from enum import Enum
 from typing import List, Optional, Union, cast, Any, Dict, Annotated
 
-from pydantic import StrictInt, StrictFloat, validator, StringConstraints
+from pydantic import StrictInt, StrictFloat, validator, StringConstraints, BaseModel
 from pydantic.dataclasses import dataclass
 
 from modbus_client.registers.register_value_type import RegisterValueType
@@ -14,8 +14,7 @@ class ValueRegisterTypeEnum(str, Enum):
     HoldingRegister = 'holding-register'
 
 
-@dataclass
-class IDeviceRegister:
+class IDeviceRegister(BaseModel):
     name: Annotated[str, StringConstraints(pattern=r'^[a-zA-Z][a-zA-Z0-9_]*$')]
     address: int
     scale: Union[StrictInt, StrictFloat] = cast(StrictInt, 1)
@@ -61,7 +60,6 @@ def parse_register_def(reg_def: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-@dataclass
 class DeviceHoldingRegister(IDeviceRegister):
     @staticmethod
     def parse(value: str) -> 'DeviceHoldingRegister':
@@ -72,7 +70,6 @@ class DeviceHoldingRegister(IDeviceRegister):
             return DeviceHoldingRegister(**data)
 
 
-@dataclass
 class DeviceInputRegister(IDeviceRegister):
     @staticmethod
     def parse(value: str) -> 'DeviceInputRegister':
