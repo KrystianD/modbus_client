@@ -460,9 +460,10 @@ async def main() -> None:
 
 
 def main_cli() -> None:
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == "__main__":
