@@ -3,7 +3,7 @@ from dataclasses import field
 from enum import Enum
 from typing import List, Optional, Union, cast, Any, Dict, Annotated
 
-from pydantic import StrictInt, StrictFloat, validator, model_validator, StringConstraints, BaseModel
+from pydantic import StrictInt, StrictFloat, field_validator, model_validator, StringConstraints, BaseModel
 from pydantic.dataclasses import dataclass
 
 from modbus_client.device.registers.enum_definition import EnumDefinition
@@ -119,10 +119,12 @@ class DeviceRegisters:
     input_registers: List[DeviceInputRegister] = field(default_factory=list)
     holding_registers: List[DeviceHoldingRegister] = field(default_factory=list)
 
-    @validator('input_registers', pre=True, allow_reuse=False)
+    @field_validator('input_registers', mode='before')
+    @classmethod
     def _input_registers(cls, v: Any) -> List[Any]:
         return [(DeviceInputRegister.parse(x) if isinstance(x, str) else x) for x in v]
 
-    @validator('holding_registers', pre=True, allow_reuse=False)
+    @field_validator('holding_registers', mode='before')
+    @classmethod
     def _holding_registers(cls, v: Any) -> List[Any]:
         return [(DeviceHoldingRegister.parse(x) if isinstance(x, str) else x) for x in v]
