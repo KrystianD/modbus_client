@@ -146,7 +146,7 @@ async def query_device(client: AsyncModbusClient, device: ModbusDevice,
                 modbus_register = modbus_registers_map[register.name]
 
                 if show_register_names:
-                    print(f"{register.name:>{max_name_len}s} = ", end="")
+                    print(f"{(register.name + ' '):-<{max_name_len}.{max_name_len}s} = ", end="")
 
                 print(f"{modbus_register.format(read_ses)}")
 
