@@ -1,17 +1,37 @@
 from dataclasses import field
-from typing import List
+from typing import List, Optional
 
 import yaml
 from pydantic.dataclasses import dataclass
 
 
 @dataclass
-class Device:
-    name: str
+class RtuConfig:
+    path: str
+    baudrate: int
+
+
+@dataclass
+class TcpConfig:
     host: str
     port: int
+
+
+@dataclass
+class RtuOverTcpConfig:
+    host: str
+    port: int
+
+
+@dataclass
+class Device:
+    name: str
     unit: int
     device: str
+
+    rtu: Optional[RtuConfig] = None
+    tcp: Optional[TcpConfig] = None
+    rtu_over_tcp: Optional[RtuOverTcpConfig] = None
 
 
 @dataclass

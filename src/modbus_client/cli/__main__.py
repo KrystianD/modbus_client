@@ -6,10 +6,12 @@ import logging
 import os
 import sys
 from dataclasses import dataclass
+from fnmatch import fnmatch
 from typing import Tuple, Any, Optional, List, Sequence, cast, Callable, Union, Dict
 
 from modbus_client.cli.argument_parsers import interval_parser, mode_parser, ModeTupleType
 from modbus_client.cli.system_file import load_system_config
+from modbus_client.cli.system_file_finder import find_system_file
 from modbus_client.client.async_modbus_client import AsyncModbusClient
 from modbus_client.client.pymodbus_async_modbus_client import PyAsyncModbusTcpClient, PyAsyncModbusRtuClient, PyAsyncModbusRtuOverTcpClient
 from modbus_client.device.registers.device_register import IDeviceRegister, DeviceHoldingRegister, DeviceInputRegister, DeviceSwitch
@@ -66,7 +68,7 @@ def create_device_from_args(args: Args) -> DeviceCreationResult:
 def create_device_from_system_file(args: Args) -> DeviceCreationResult:
     device_name = vars(args)["device-name"]
     system_file = vars(args)["system-file"]
-    system_config = load_system_config(system_file)
+    system_config = load_system_config(find_system_file(system_file))
 
     if device_name == "list":
         for dev in system_config.devices:
@@ -77,9 +79,29 @@ def create_device_from_system_file(args: Args) -> DeviceCreationResult:
         if len(devices) == 0:
             print("no matching device")
             exit(1)
-        device = devices[0]
-        modbus_device = ModbusDeviceFactory.from_file(device.device).create_device(device.unit)
-        client = PyAsyncModbusTcpClient(host=device.host, port=device.port, timeout=3)
+        system_device = devices[0]
+        modbus_device = ModbusDeviceFactory.from_file(system_device.device).create_device(system_device.unit)
+        device_config = modbus_device.get_device_config()
+
+        timeout = device_config.default_timeout or 3
+        silent_interval = device_config.default_silent_interval or 0.05
+
+        client: AsyncModbusClient
+        if system_device.tcp is not None:
+            client = PyAsyncModbusTcpClient(host=system_device.tcp.host, port=system_device.tcp.port,
+                                            timeout=timeout,
+                                            silent_interval=silent_interval)
+        elif system_device.rtu:
+            client = PyAsyncModbusRtuClient(path=system_device.rtu.path, baudrate=system_device.rtu.baudrate,
+                                            timeout=timeout,
+                                            silent_interval=silent_interval)
+        elif system_device.rtu_over_tcp:
+            client = PyAsyncModbusRtuOverTcpClient(host=system_device.rtu_over_tcp.host, port=system_device.rtu_over_tcp.port,
+                                                   timeout=timeout,
+                                                   silent_interval=silent_interval)
+        else:
+            raise Exception("invalid mode")
+
         return modbus_device, client
 
 
