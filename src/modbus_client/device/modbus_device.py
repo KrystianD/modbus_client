@@ -81,12 +81,14 @@ class ModbusDevice:
 
     def get_register(self, name: str) -> IDeviceRegister:
         reg = self._device_config.find_register(name)
-        assert reg is not None
+        if reg is None:
+            raise ValueError(f"Register /{name}/ not found")
         return reg
 
     def get_switch(self, name: str) -> DeviceSwitch:
         switch = self._device_config.find_switch(name)
-        assert switch is not None
+        if switch is None:
+            raise ValueError(f"Switch /{name}/ not found")
         return switch
 
     def create_modbus_register(self, register: Union[str, IDeviceRegister]) -> IRegister:
