@@ -17,6 +17,8 @@ class DeviceConfig:
     force_multiple_write: bool = False
     allow_holes: bool = False
     max_read_size: int = DefaultMaxReadSize
+    default_timeout: float | None = None
+    default_silent_interval: float | None = None
 
     def find_register(self, name: str) -> Optional[IDeviceRegister]:
         for reg in self.get_all_registers():

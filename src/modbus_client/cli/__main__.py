@@ -13,6 +13,7 @@ from modbus_client.cli.argument_parsers import interval_parser, mode_parser, Mod
 from modbus_client.cli.system_file import load_system_config
 from modbus_client.cli.system_file_finder import find_system_file
 from modbus_client.client.async_modbus_client import AsyncModbusClient
+from modbus_client.client.defaults import DefaultTimeout, DefaultSilentInterval
 from modbus_client.client.pymodbus_async_modbus_client import PyAsyncModbusTcpClient, PyAsyncModbusRtuClient, PyAsyncModbusRtuOverTcpClient
 from modbus_client.device.registers.device_register import IDeviceRegister, DeviceHoldingRegister, DeviceInputRegister, DeviceSwitch
 from modbus_client.registers.read_session import ModbusReadSession
@@ -49,16 +50,24 @@ class Args:
 def create_device_from_args(args: Args) -> DeviceCreationResult:
     device_mode = args.device_mode
     modbus_device = ModbusDeviceFactory.from_file(vars(args)["device-file"]).create_device(args.unit)
+    device_config = modbus_device.get_device_config()
+
+    timeout = args.timeout or device_config.default_timeout or DefaultTimeout
+    silent_interval = args.silent_interval or device_config.default_silent_interval or DefaultSilentInterval
 
     client: AsyncModbusClient
     if device_mode == "tcp":
-        client = PyAsyncModbusTcpClient(host=args.host, port=args.port, timeout=args.timeout, silent_interval=args.silent_interval)
+        client = PyAsyncModbusTcpClient(host=args.host, port=args.port,
+                                        timeout=timeout,
+                                        silent_interval=silent_interval)
     elif device_mode == "rtu":
-        client = PyAsyncModbusRtuClient(
-                path=args.path, baudrate=args.mode[0], stopbits=args.mode[2], parity=args.mode[1], timeout=args.timeout,
-                silent_interval=args.silent_interval)
+        client = PyAsyncModbusRtuClient(path=args.path, baudrate=args.mode[0], stopbits=args.mode[2], parity=args.mode[1],
+                                        timeout=timeout,
+                                        silent_interval=silent_interval)
     elif device_mode == "rtu-over-tcp":
-        client = PyAsyncModbusRtuOverTcpClient(host=args.host, port=args.port, timeout=args.timeout, silent_interval=args.silent_interval)
+        client = PyAsyncModbusRtuOverTcpClient(host=args.host, port=args.port,
+                                               timeout=timeout,
+                                               silent_interval=silent_interval)
     else:
         raise Exception("invalid mode")
 
@@ -83,8 +92,8 @@ def create_device_from_system_file(args: Args) -> DeviceCreationResult:
         modbus_device = ModbusDeviceFactory.from_file(system_device.device).create_device(system_device.unit)
         device_config = modbus_device.get_device_config()
 
-        timeout = device_config.default_timeout or 3
-        silent_interval = device_config.default_silent_interval or 0.05
+        timeout = device_config.default_timeout or DefaultTimeout
+        silent_interval = device_config.default_silent_interval or DefaultSilentInterval
 
         client: AsyncModbusClient
         if system_device.tcp is not None:
@@ -338,7 +347,7 @@ async def main() -> None:
     argparser = argparse.ArgumentParser()
 
     argparser.add_argument("--format", type=str, choices=("raw", "pretty", "json"), default="pretty")
-    argparser.add_argument("--timeout", type=float, default=3)
+    argparser.add_argument("--timeout", type=float)
     argparser.add_argument("--silent-interval", type=float)
     argparser.add_argument("-v", "--verbose", action='store_true')
 
