@@ -67,6 +67,7 @@ class PyAsyncModbusClient(AsyncModbusClient):
             raise ReadErrorException(str(result))
 
     async def read_holding_registers(self, unit: int, address: int, count: int) -> List[int]:
+        logging.debug(f"read {address} count: {count}")
         result = await self._run(self.client.read_holding_registers, slave=unit, address=address, count=count)
         if isinstance(result, pymodbus.register_read_message.ReadHoldingRegistersResponse):
             if len(result.registers) != count:
@@ -77,11 +78,14 @@ class PyAsyncModbusClient(AsyncModbusClient):
             raise ReadErrorException(str(result))
 
     async def write_holding_register(self, unit: int, address: int, value: int) -> None:
+        logging.debug(f"write {address} value: 0x{value:04x}")
         result = await self._run(self.client.write_register, slave=unit, address=address, value=value)
         if not isinstance(result, pymodbus.register_write_message.WriteSingleRegisterResponse):
             raise WriteErrorException(str(result))
 
     async def write_holding_registers(self, unit: int, address: int, values: List[int]) -> None:
+        s = ", ".join(f"0x{value:04x}" for value in values)
+        logging.debug(f"write {address} values: {s}")
         result = await self._run(self.client.write_registers, slave=unit, address=address, values=values)
         if not isinstance(result, pymodbus.register_write_message.WriteMultipleRegistersResponse):
             raise WriteErrorException(str(result))
