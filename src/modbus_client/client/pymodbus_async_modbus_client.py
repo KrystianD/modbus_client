@@ -127,6 +127,7 @@ class PyAsyncModbusRtuOverTcpClient(PyAsyncModbusClient):
 
 
 __all__ = [
+    "PyAsyncModbusClient",
     "PyAsyncModbusTcpClient",
     "PyAsyncModbusRtuClient",
     "PyAsyncModbusRtuOverTcpClient",

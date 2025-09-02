@@ -1,4 +1,5 @@
-from typing import Union, List, Dict
+from collections.abc import Sequence
+from typing import Union, Dict, Set
 
 from modbus_client.client.async_modbus_client import AsyncModbusClient
 from modbus_client.device.registers.device_register import DeviceInputRegister, DeviceHoldingRegister, SwitchRegisterTypeEnum, \
@@ -119,7 +120,7 @@ class ModbusDevice:
 
         return modbus_register.get_value_from_read_session(read_session)
 
-    async def read_registers(self, client: AsyncModbusClient, registers: List[Union[str, IDeviceRegister]]) \
+    async def read_registers(self, client: AsyncModbusClient, registers: Sequence[Union[str, IDeviceRegister]]) \
             -> Dict[str, Union[int, float, EnumValue]]:
         modbus_registers = [self.create_modbus_register(x) for x in registers]
 
