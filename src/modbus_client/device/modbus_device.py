@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Union, Dict, Set
+from typing import Union, Dict
 
 from modbus_client.client.async_modbus_client import AsyncModbusClient
 from modbus_client.device.registers.device_register import DeviceInputRegister, DeviceHoldingRegister, SwitchRegisterTypeEnum, \
@@ -8,13 +8,15 @@ from modbus_client.device.registers.enum_definition import EnumDefinition
 from modbus_client.device.registers.register_type import RegisterType
 from modbus_client.registers.read_session import ModbusReadSession
 from modbus_client.registers.register_value_type import RegisterValueType
-from modbus_client.registers.registers import NumericRegister, Coil, IRegister, EnumValue, EnumRegister, BoolRegister
+from modbus_client.registers.registers import NumericRegister, Coil, IRegister, EnumValue, EnumRegister, BoolRegister, FlagsRegister, \
+    FlagsCollection
 from modbus_client.client.types import ModbusRegisterType
 from modbus_client.device.device_config import DeviceConfig, load_device_config, load_device_config_from_yaml
 from modbus_client.device.device_config_finder import find_device_file
 
 
-def create_modbus_register(device: DeviceConfig, register: IDeviceRegister) -> Union[NumericRegister, EnumRegister, BoolRegister]:
+def create_modbus_register(device: DeviceConfig, register: IDeviceRegister) -> Union[
+    NumericRegister, EnumRegister, BoolRegister, FlagsRegister]:
     zero_offset = 0 if device.zero_mode else 1
     address = register.address - zero_offset
 
@@ -33,6 +35,11 @@ def create_modbus_register(device: DeviceConfig, register: IDeviceRegister) -> U
         return EnumRegister(name=register.name, reg_type=reg_type, value_type=RegisterValueType.U16,
                             address=address, enum=register.enum,
                             bits=register.bits.bits if register.bits is not None else None)
+    elif register.type == RegisterType.FLAGS:
+        assert register.flags is not None
+        return FlagsRegister(name=register.name, reg_type=reg_type,
+                             address=address, flags=register.flags,
+                             bits=register.bits.bits if register.bits is not None else None)
     else:
         return NumericRegister(name=register.name, reg_type=reg_type, value_type=RegisterValueType(register.type),
                                address=address, scale=register.scale, unit=register.unit,
@@ -109,7 +116,7 @@ class ModbusDevice:
             raise Exception("Invalid switch type")
 
     async def read_register(self, client: AsyncModbusClient, register: Union[str, IDeviceRegister]) \
-            -> Union[int, float, EnumValue]:
+            -> Union[int, float, EnumValue, FlagsCollection]:
         modbus_register = self.create_modbus_register(register)
 
         read_session = await ModbusReadSession.read_registers(client=client,
@@ -121,7 +128,7 @@ class ModbusDevice:
         return modbus_register.get_value_from_read_session(read_session)
 
     async def read_registers(self, client: AsyncModbusClient, registers: Sequence[Union[str, IDeviceRegister]]) \
-            -> Dict[str, Union[int, float, EnumValue]]:
+            -> Dict[str, Union[int, float, EnumValue, FlagsCollection]]:
         modbus_registers = [self.create_modbus_register(x) for x in registers]
 
         read_session = await ModbusReadSession.read_registers(client=client,

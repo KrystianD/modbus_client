@@ -1,9 +1,10 @@
 import struct
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Union, List, Optional, cast
+from typing import Union, List, Optional, cast, Set, Iterator
 
 from modbus_client.device.registers.enum_definition import EnumDefinition
+from modbus_client.device.registers.flag_definition import FlagDefinition
 from modbus_client.registers.address_range import AddressRangeTrait
 from modbus_client.client.types import ModbusRegisterType
 from modbus_client.registers.type_converters import get_type_converter
@@ -43,6 +44,39 @@ class EnumValue:
             return f"{self.enum_name} ({self.enum_value})"
 
 
+@dataclass(frozen=True)
+class FlagValue:
+    flag_name: Optional[str]
+    flag_bit: int
+    flag_display: Optional[str]
+
+    def format(self) -> str:
+        if self.flag_name is None:
+            return f"(bit{self.flag_bit})"
+        else:
+            return f"{self.flag_name} (bit{self.flag_bit})"
+
+
+@dataclass(frozen=True)
+class FlagsCollection:
+    flags: Set[FlagValue]
+
+    def __iter__(self) -> Iterator[FlagValue]:
+        return iter(self.flags)
+
+    def __contains__(self, item: int | FlagValue | FlagDefinition) -> bool:
+        bits = {x.flag_bit for x in self.flags}
+
+        if isinstance(item, int):
+            return item in bits
+        elif isinstance(item, FlagValue):
+            return item.flag_bit in bits
+        elif isinstance(item, FlagDefinition):
+            return item.bit in bits
+        else:
+            raise ValueError(f"Unsupported item type {type(item)}")
+
+
 class IRegister(AddressRangeTrait):
     def __init__(self, name: str, reg_type: ModbusRegisterType, address: int,
                  value_type: RegisterValueType, bits: Optional[BitsArray]) -> None:
@@ -74,7 +108,7 @@ class IRegister(AddressRangeTrait):
         pass
 
     @abstractmethod
-    def get_value_from_read_session(self, read_session: ModbusReadSession) -> Union[int, float, EnumValue]:
+    def get_value_from_read_session(self, read_session: ModbusReadSession) -> Union[int, float, EnumValue, FlagsCollection]:
         pass
 
     def get_raw_from_read_session(self, read_session: ModbusReadSession) -> int:
@@ -202,6 +236,46 @@ class BoolRegister(IRegister):
         value = self.get_value_from_read_session(read_session)
 
         return "true" if value else "false"
+
+
+class FlagsRegister(IRegister):
+    def __init__(self, name: str, reg_type: ModbusRegisterType, address: int, *, bits: Optional[BitsArray] = None,
+                 flags: List[FlagDefinition]) -> None:
+        super().__init__(name=name, reg_type=reg_type, address=address, value_type=RegisterValueType.U16, bits=bits)
+
+        self.bit_to_flag = {x.bit: x for x in flags}
+
+        if self.value_type not in (RegisterValueType.U16,):
+            raise ValueError("Flags only supports uint16 type")
+
+    def requires_existing_reading(self) -> bool:
+        return True
+
+    def get_value_from_read_session(self, read_session: ModbusReadSession) -> FlagsCollection:
+        value = super().get_raw_from_read_session(read_session)
+
+        flags: Set[FlagValue] = set()
+        bit = 0
+        while value > 0:
+            if value & 1 == 1:
+                f = self.bit_to_flag.get(bit)
+                if f is not None:
+                    flags.add(FlagValue(flag_name=f.name, flag_bit=f.bit, flag_display=f.display))
+                else:
+                    flags.add(FlagValue(flag_name=None, flag_bit=bit, flag_display=None))
+
+            value >>= 1
+            bit += 1
+
+        return FlagsCollection(flags)
+
+    def value_to_modbus_registers(self, value: Union[int, float, str], existing_read_session: ModbusReadSession | None) -> List[int]:
+        raise Exception("writing to flags register is not supported")
+
+    def format(self, read_session: ModbusReadSession) -> str:
+        value = self.get_value_from_read_session(read_session)
+
+        return ",".join(x.format() for x in sorted(value, key=lambda x: x.flag_bit, reverse=True))
 
 
 class Coil(IRegister):

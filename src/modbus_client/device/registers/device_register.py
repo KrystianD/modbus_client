@@ -7,6 +7,7 @@ from pydantic import StrictInt, StrictFloat, field_validator, model_validator, S
 from pydantic.dataclasses import dataclass
 
 from modbus_client.device.registers.enum_definition import EnumDefinition
+from modbus_client.device.registers.flag_definition import FlagDefinition
 from modbus_client.registers.bitarray import BitArray
 from modbus_client.device.registers.register_type import RegisterType
 
@@ -25,6 +26,7 @@ class IDeviceRegister(BaseModel):
     unit: Optional[str] = None
     bits: Optional[BitArray] = None
     enum: Optional[List[EnumDefinition]] = None
+    flags: Optional[List[FlagDefinition]] = None
     bit: int = 0
 
     @field_validator('bits', mode='before')
@@ -38,6 +40,11 @@ class IDeviceRegister(BaseModel):
             raise ValueError("register of type /enum/ requires /enum/ object with the definition")
         if self.type == RegisterType.BOOL and self.bit is None:
             raise ValueError("register of type /bool/ requires /bit/ definition")
+        if self.type == RegisterType.FLAGS:
+            if self.flags is None:
+                raise ValueError("register of type /flags/ requires /flags/ object with the definition")
+            if not self.readonly:
+                raise ValueError("register of type /flags/ need to be readonly")
         return self
 
 
