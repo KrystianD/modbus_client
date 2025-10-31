@@ -17,3 +17,4 @@ class RegisterType(str, Enum):
     ENUM = 'enum'
     BOOL = 'bool'
     FLAGS = 'flags'
+    STRING = 'string'

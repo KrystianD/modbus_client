@@ -108,7 +108,7 @@ class IRegister(AddressRangeTrait):
         pass
 
     @abstractmethod
-    def get_value_from_read_session(self, read_session: ModbusReadSession) -> Union[int, float, EnumValue, FlagsCollection]:
+    def get_value_from_read_session(self, read_session: ModbusReadSession) -> Union[int, float, EnumValue, FlagsCollection, str]:
         pass
 
     def get_raw_from_read_session(self, read_session: ModbusReadSession) -> int:
@@ -276,6 +276,40 @@ class FlagsRegister(IRegister):
         value = self.get_value_from_read_session(read_session)
 
         return ",".join(x.format() for x in sorted(value, key=lambda x: x.flag_bit, reverse=True))
+
+
+class StringRegister(IRegister):
+    def __init__(self, name: str, reg_type: ModbusRegisterType, address: int, *, words: int) -> None:
+        super().__init__(name=name, reg_type=reg_type, address=address, value_type=RegisterValueType.U16, bits=[])
+
+        self.words = words
+
+        if self.value_type not in (RegisterValueType.U16,):
+            raise ValueError("Flags only supports uint16 type")
+
+    def get_count(self) -> int:
+        return self.words
+
+    def requires_existing_reading(self) -> bool:
+        return True
+
+    def get_value_from_read_session(self, read_session: ModbusReadSession) -> str:
+        values = [read_session.registers_dict[(self.reg_type, self.address + i)] for i in range(self.get_count())]
+
+        string_bytes = struct.pack(f">{len(values)}H", *values)
+        first_null = string_bytes.find(0x00)
+        if first_null != -1:
+            string_bytes = string_bytes[:first_null]
+
+        return string_bytes.decode('ascii')
+
+    def value_to_modbus_registers(self, value: Union[int, float, str], existing_read_session: ModbusReadSession | None) -> List[int]:
+        raise Exception("writing to flags register is not supported")
+
+    def format(self, read_session: ModbusReadSession) -> str:
+        value = self.get_value_from_read_session(read_session)
+
+        return value
 
 
 class Coil(IRegister):

@@ -3,7 +3,7 @@ from dataclasses import field
 from enum import Enum
 from typing import List, Optional, Union, cast, Any, Dict, Annotated
 
-from pydantic import StrictInt, StrictFloat, field_validator, model_validator, StringConstraints, BaseModel
+from pydantic import StrictInt, StrictFloat, field_validator, model_validator, StringConstraints, BaseModel, Field
 from pydantic.dataclasses import dataclass
 
 from modbus_client.device.registers.enum_definition import EnumDefinition
@@ -27,6 +27,7 @@ class IDeviceRegister(BaseModel):
     bits: Optional[BitArray] = None
     enum: Optional[List[EnumDefinition]] = None
     flags: Optional[List[FlagDefinition]] = None
+    words: Annotated[int, Field(default=0, gt=0)]
     bit: int = 0
 
     @field_validator('bits', mode='before')
@@ -45,6 +46,11 @@ class IDeviceRegister(BaseModel):
                 raise ValueError("register of type /flags/ requires /flags/ object with the definition")
             if not self.readonly:
                 raise ValueError("register of type /flags/ need to be readonly")
+        if self.type == RegisterType.STRING:
+            if self.words is None:
+                raise ValueError("register of type /string/ requires /words/ number")
+            if not self.readonly:
+                raise ValueError("register of type /string/ need to be readonly")
         return self
 
 
