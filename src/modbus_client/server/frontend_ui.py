@@ -268,13 +268,14 @@ def emit_edit_control(state: UiState, values: Any, reg: DeviceHoldingRegister) -
     conn = state.conn
     is_refreshing = False
     is_setting = False
-    override_value = None
+    override_value: Optional[TValueForSet] = None
     ui_root = None
 
     unit_str = "" if reg.unit is None else f" [{reg.unit}]"
 
     async def fn_refresh() -> None:
         nonlocal is_refreshing
+        nonlocal override_value
         nonlocal ui_root
         try:
             is_refreshing = True
@@ -282,6 +283,7 @@ def emit_edit_control(state: UiState, values: Any, reg: DeviceHoldingRegister) -
 
             with closing(conn.client_factory()) as device_client:
                 current_value = await conn.modbus_device.read_register(device_client, reg)
+            override_value = None
 
             values[reg.name] = current_value
 
@@ -310,6 +312,7 @@ def emit_edit_control(state: UiState, values: Any, reg: DeviceHoldingRegister) -
             with closing(conn.client_factory()) as device_client:
                 await conn.modbus_device.write_register(device_client, reg, new_value)
             values[reg.name] = new_value
+            override_value = None
 
             notify_positive(ui_root, f"/{reg.name}/ set to /{value_str}/")
         except:
@@ -317,7 +320,6 @@ def emit_edit_control(state: UiState, values: Any, reg: DeviceHoldingRegister) -
             notify_negative(ui_root, f"Unable to update /{reg.name}/ value to /{value_str}/")
         finally:
             is_setting = False
-            override_value = None
             ui_cont.refresh()
 
     @ui.refreshable  # type: ignore
