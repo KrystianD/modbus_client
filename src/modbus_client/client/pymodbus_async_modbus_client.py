@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import logging
+import time
 from asyncio import CancelledError
 from concurrent.futures.thread import ThreadPoolExecutor
 from typing import List, cast, Any, Callable, Optional, TypeVar
@@ -23,12 +24,21 @@ DefaultRetryCount = 1
 
 
 class PyAsyncModbusClient(AsyncModbusClient):
-    def __init__(self, client: pymodbus.client.base.ModbusBaseClient, retry_count: int = DefaultRetryCount):
+    def __init__(self, client: pymodbus.client.base.ModbusBaseClient, retry_count: int = DefaultRetryCount, silent_interval: float = 0.0):
         self.client = client
         self.executor = ThreadPoolExecutor(1)
         self._retry_count = max(1, retry_count)
+        self._silent_interval = silent_interval
+
+        self._last_request_time: Optional[float] = None
 
     async def _run_single(self, fn: Callable[..., T], *args: List[Any], **kwargs: Any) -> T:
+        if self._last_request_time is not None and self._silent_interval > 0:
+            diff = time.time() - self._last_request_time
+            if diff < self._silent_interval:
+                to_wait = self._silent_interval - diff
+                await asyncio.sleep(to_wait)
+
         try:
             resp = await asyncio.get_event_loop().run_in_executor(self.executor, functools.partial(fn, *args, **kwargs))
             if isinstance(resp, pymodbus.exceptions.ModbusException):
@@ -39,6 +49,8 @@ class PyAsyncModbusClient(AsyncModbusClient):
                 return resp
         except Exception as e:
             raise ModbusException(f"Unknown error: {e}")
+        finally:
+            self._last_request_time = time.time()
 
     async def _run_with_retry(self, fn: Callable[..., T], *args: List[Any], **kwargs: Any) -> T:
         for i in range(self._retry_count):
@@ -117,15 +129,11 @@ class PyAsyncModbusTcpClient(PyAsyncModbusClient):
                  port: int,
                  *,
                  timeout: float = DefaultTimeout,
-                 silent_interval: Optional[float] = None,
+                 silent_interval: Optional[float] = 0.0,
                  retry_count: int = DefaultRetryCount,
                  ):
         cl = pymodbus.client.tcp.ModbusTcpClient(host=host, port=port, timeout=timeout)
-
-        if silent_interval is not None:
-            cl.silent_interval = silent_interval
-
-        super().__init__(cl, retry_count=retry_count)
+        super().__init__(cl, retry_count=retry_count, silent_interval=silent_interval)
 
 
 class PyAsyncModbusRtuClient(PyAsyncModbusClient):
@@ -136,16 +144,13 @@ class PyAsyncModbusRtuClient(PyAsyncModbusClient):
                  stopbits: int = 1,
                  parity: str = "N",
                  timeout: float = DefaultTimeout,
-                 silent_interval: Optional[float] = None,
+                 silent_interval: Optional[float] = 0.0,
                  retry_count: int = DefaultRetryCount,
                  ):
         cl = pymodbus.client.serial.ModbusSerialClient(method="rtu", port=path,
                                                        baudrate=baudrate, stopbits=stopbits, parity=parity,
                                                        timeout=timeout)
-        if silent_interval is not None:
-            cl.silent_interval = silent_interval
-
-        super().__init__(cl, retry_count=retry_count)
+        super().__init__(cl, retry_count=retry_count, silent_interval=silent_interval)
 
 
 class PyAsyncModbusRtuOverTcpClient(PyAsyncModbusClient):
@@ -154,15 +159,11 @@ class PyAsyncModbusRtuOverTcpClient(PyAsyncModbusClient):
                  port: int,
                  *,
                  timeout: float = DefaultTimeout,
-                 silent_interval: Optional[float] = None,
+                 silent_interval: Optional[float] = 0.0,
                  retry_count: int = DefaultRetryCount,
                  ):
         cl = pymodbus.client.tcp.ModbusTcpClient(host=host, port=port, timeout=timeout, framer=ModbusRtuFramer)  # type: ignore
-
-        if silent_interval is not None:
-            cl.silent_interval = silent_interval
-
-        super().__init__(cl, retry_count=retry_count)
+        super().__init__(cl, retry_count=retry_count, silent_interval=silent_interval)
 
 
 __all__ = [
