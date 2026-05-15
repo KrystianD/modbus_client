@@ -98,7 +98,8 @@ class PyAsyncModbusTcpClient(PyAsyncModbusClient):
     def __init__(self,
                  host: str,
                  port: int,
-                 timeout: float,
+                 *,
+                 timeout: float = 3,
                  silent_interval: Optional[float] = None,
                  ):
         cl = pymodbus.client.tcp.ModbusTcpClient(host=host, port=port, timeout=timeout)
@@ -112,6 +113,7 @@ class PyAsyncModbusTcpClient(PyAsyncModbusClient):
 class PyAsyncModbusRtuClient(PyAsyncModbusClient):
     def __init__(self,
                  path: str,
+                 *,
                  baudrate: int = 9600,
                  stopbits: int = 1,
                  parity: str = "N",
@@ -131,7 +133,8 @@ class PyAsyncModbusRtuOverTcpClient(PyAsyncModbusClient):
     def __init__(self,
                  host: str,
                  port: int,
-                 timeout: float,
+                 *,
+                 timeout: float = 3,
                  silent_interval: Optional[float] = None,
                  ):
         cl = pymodbus.client.tcp.ModbusTcpClient(host=host, port=port, timeout=timeout, framer=ModbusRtuFramer)  # type: ignore
