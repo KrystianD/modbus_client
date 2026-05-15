@@ -18,6 +18,7 @@ from modbus_client.client.exceptions import ModbusException
 
 T = TypeVar('T')
 
+DefaultTimeout = 3
 DefaultRetryCount = 1
 
 
@@ -115,7 +116,7 @@ class PyAsyncModbusTcpClient(PyAsyncModbusClient):
                  host: str,
                  port: int,
                  *,
-                 timeout: float = 3,
+                 timeout: float = DefaultTimeout,
                  silent_interval: Optional[float] = None,
                  retry_count: int = DefaultRetryCount,
                  ):
@@ -134,7 +135,7 @@ class PyAsyncModbusRtuClient(PyAsyncModbusClient):
                  baudrate: int = 9600,
                  stopbits: int = 1,
                  parity: str = "N",
-                 timeout: float = 3,
+                 timeout: float = DefaultTimeout,
                  silent_interval: Optional[float] = None,
                  retry_count: int = DefaultRetryCount,
                  ):
@@ -152,7 +153,7 @@ class PyAsyncModbusRtuOverTcpClient(PyAsyncModbusClient):
                  host: str,
                  port: int,
                  *,
-                 timeout: float = 3,
+                 timeout: float = DefaultTimeout,
                  silent_interval: Optional[float] = None,
                  retry_count: int = DefaultRetryCount,
                  ):
