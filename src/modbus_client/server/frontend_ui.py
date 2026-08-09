@@ -219,7 +219,8 @@ def emit_view_control(state: UiState, values: TValuesMap, reg: IDeviceRegister) 
             if reg.type == RegisterType.BOOL:
                 value = cast(bool, value)
                 ui_el = ui.checkbox(text=reg.name, value=value)
-                ui_el.props("dense outlined readonly").style("width: 200px")
+                ui_el.props("dense outlined").style("width: 200px")
+                ui_el.enabled = False
             elif reg.type == RegisterType.ENUM:
                 value = cast(EnumValue, value)
                 ui_el = ui.input(reg.name, value=value.enum_name or "<unknown>").props("autogrow")
