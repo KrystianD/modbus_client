@@ -7,7 +7,7 @@ import os
 import sys
 from dataclasses import dataclass
 from fnmatch import fnmatch
-from typing import Tuple, Any, Optional, List, Sequence, cast, Callable, Union, Dict
+from typing import Tuple, Any, Optional, List, Sequence, cast, Callable, Union, Dict, TypeVar
 
 from modbus_client.cli.argument_parsers import interval_parser, mode_parser, ModeTupleType
 from modbus_client.cli.system_file import load_system_config
@@ -47,13 +47,23 @@ class Args:
     verbose: bool
 
 
+T = TypeVar("T")
+
+
+def first_not_null(*args: T | None) -> T:
+    for arg in args:
+        if arg is not None:
+            return arg
+    raise ValueError("missing value")
+
+
 def create_device_from_args(args: Args) -> DeviceCreationResult:
     device_mode = args.device_mode
     modbus_device = ModbusDeviceFactory.from_file(vars(args)["device-file"]).create_device(args.unit)
     device_config = modbus_device.get_device_config()
 
-    timeout = args.timeout or device_config.default_timeout or DefaultTimeout
-    silent_interval = args.silent_interval or device_config.default_silent_interval or DefaultSilentInterval
+    timeout = first_not_null(args.timeout, device_config.default_timeout, DefaultTimeout)
+    silent_interval = first_not_null(args.silent_interval, device_config.default_silent_interval, DefaultSilentInterval)
 
     client: AsyncModbusClient
     if device_mode == "tcp":
