@@ -275,8 +275,7 @@ async def handle_list(device_config: DeviceConfig) -> None:
         print("  ", switch.name)
 
 
-async def handle_read(client: AsyncModbusClient, device: ModbusDevice, names: List[str],
-                      format: str) -> None:
+def find_registers(device: ModbusDevice, names: List[str]):
     all_registers_names = [x.name for x in device.get_device_config().get_all_registers()]
 
     selected_regs = []
@@ -291,6 +290,13 @@ async def handle_read(client: AsyncModbusClient, device: ModbusDevice, names: Li
         if not any_found:
             print(f"Register or switch [{name}] not found")
             exit(1)
+
+    return selected_regs
+
+
+async def handle_read(client: AsyncModbusClient, device: ModbusDevice, names: List[str],
+                      format: str) -> None:
+    selected_regs = find_registers(device, names)
 
     registers: List[IDeviceRegister] = []
     switches: List[DeviceSwitch] = []
@@ -313,7 +319,10 @@ async def handle_watch(client: AsyncModbusClient, device: ModbusDevice, names: L
                        interval: float) -> None:
     registers: List[IDeviceRegister] = []
     switches: List[DeviceSwitch] = []
-    for name in names:
+
+    selected_regs = find_registers(device, names)
+
+    for name in selected_regs:
         register = device.get_device_config().find_register(name)
         if register is not None:
             registers.append(register)
