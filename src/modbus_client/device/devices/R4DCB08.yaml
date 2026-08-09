@@ -19,3 +19,4 @@ registers:
     - temp7_correction/0x000e/int16*0.1[°C]
     - temp8_correction/0x000f/int16*0.1[°C]
     - slave_id/0x0fe
+    - automatic_temperature_report/0x00fd/uint16
